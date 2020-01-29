@@ -1,0 +1,22 @@
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "imgUrl": "/img/a.png",
+    "buskerName": "Busker",
+    "sex": 1,
+    "age": 23,
+    "instrument": "Guitar, Piano",
+    "introduce": "introduce",
+    "moments": [{
+      "id": 1
+    },{
+      "id": 2
+    }],
+    "trails": [{
+      "id": 1
+    },{
+      "id": 2
+    }]
+  }
+}

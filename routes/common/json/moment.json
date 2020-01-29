@@ -1,0 +1,10 @@
+{
+  "buskerId":2,
+  "postTime":"1997-09-08 12:12:12",
+  "content":"greate",
+  "address":"重庆",
+  "video":[
+    {"videoPath":"https://www.youtube.com/watch?v=yKNxeF4KMsY%26list=RDEMuf6htoZivPnz-ZIwGU0dDA%26index=3"},
+    {"videoPath":"https://www.youtube.com/watch?v=VPRjCeoBqrI%26list=RDEMuf6htoZivPnz-ZIwGU0dDA%26index=4"}
+  ]
+}

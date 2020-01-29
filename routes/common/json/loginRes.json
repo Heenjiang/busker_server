@@ -1,0 +1,12 @@
+{
+  "success": true,
+  "data": {
+    "islogged": true,
+    "currentUser": {
+      "isLogged": true,
+      "currentUser": {
+        "username": "Hoen"
+      }
+    }
+  }
+}

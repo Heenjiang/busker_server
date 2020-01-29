@@ -1,0 +1,39 @@
+{
+  "success": true,
+  "data": {
+    "trailList": [
+      {
+        "id": 5,
+        "time": "2019-05-03T21:00:00.000Z",
+        "name": "ed",
+        "address": "上海",
+        "describe": "hahhahahhahhah",
+        "imgUrl": "public/poster4"
+      },
+      {
+        "id": 4,
+        "time": "2019-05-03T21:00:00.000Z",
+        "name": "ed",
+        "address": "上海",
+        "describe": "hahhahahhahhah",
+        "imgUrl": "public/poster4"
+      },
+      {
+        "id": 3,
+        "time": "2019-04-30T21:00:00.000Z",
+        "name": "coldPlay",
+        "address": "ChongQing, China",
+        "describe": "aghdsg",
+        "imgUrl": "public/poster5"
+      },
+      {
+        "id": 2,
+        "time": "2019-03-15T21:00:00.000Z",
+        "name": "ed shrenn",
+        "address": "grodno, belarus",
+        "describe": "2019年 全国舞台艺术优秀作品展演 全国优秀民族歌剧展演 中央歌剧院 原创歌剧《命运》   时间:2019年3月2-3日 地点:北京二七剧场             主创人员   出品人:袁平 总监制:刘云志 监制:杨雄、么红、李丹阳   作曲:捞仔 编剧:朱海 导演:曹其敬 指挥:杨洋、袁丁 舞美设计:马连庆 执行导演:沈亮 合唱指挥:周昊宇 乐团首席:杜玄   灯光设计:袁京男、晁毅 服装设",
+        "imgUrl": "public/poster4"
+      }
+    ]
+  }
+}

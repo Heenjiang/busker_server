@@ -1,0 +1,25 @@
+{
+  "success": true,
+  "data": {
+    "moment": {
+      "id": 2,
+      "time": "2019-04-10T12:17:32.000Z",
+      "buskerName": "WestLife",
+      "address": "г. Гродно, ул. Ожешко, 22, ауд.120",
+      "describe": "555555555",
+      "tendency": 80,
+      "images": [
+        {
+          "id": 3,
+          "imageUrl": "public/poster3"
+        }
+      ],
+      "videos": [
+        {
+          "id": 3,
+          "videoUrl": "https://www.youtube.com/watch?v=W_sdEBKrJUE"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "success": true,
+  "data": {
+    "buskerList": [
+      {
+        "id": 5,
+        "imgUrl": 123456,
+        "buskerName": "谢霆锋",
+        "age": 0,
+        "sex": 1,
+        "instrument": "guitar",
+        "introduce": "hahahahhah",
+        "recentPerform": "",
+        "tendencyAllHot": 0
+      },
+      {
+        "id": 4,
+        "imgUrl": 123456,
+        "buskerName": "linkPark",
+        "age": 21,
+        "sex": 1,
+        "instrument": "guitar drump",
+        "introduce": "good rocker",
+        "recentPerform": "",
+        "tendencyAllHot": 0
+      },
+      {
+        "id": 3,
+        "imgUrl": 123456,
+        "buskerName": "ed sheeran",
+        "age": 29,
+        "sex": 1,
+        "instrument": "Guitaar",
+        "introduce": "great man",
+        "recentPerform": "2019-03-26T08:33:16.000Z",
+        "tendencyAllHot": 90
+      },
+      {
+        "id": 2,
+        "imgUrl": 123456,
+        "buskerName": "ColdPlay",
+        "age": 19,
+        "sex": 1,
+        "instrument": "Guitar",
+        "introduce": "nice man",
+        "recentPerform": "2019-04-16T12:17:53.000Z",
+        "tendencyAllHot": 90
+      },
+      {
+        "id": 1,
+        "imgUrl": 123456,
+        "buskerName": "WestLife",
+        "age": 19,
+        "sex": 1,
+        "instrument": "Guitar, Drum, Keyboard",
+        "introduce": "my love",
+        "recentPerform": "2019-04-10T12:17:32.000Z",
+        "tendencyAllHot": 180
+      }
+    ]
+  }
+}

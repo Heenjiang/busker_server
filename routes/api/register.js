@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const con = require('../common/dbconfiguration');
 const sql = require('../common/sql.json');
+const sequelize = require('../common/ormConfiguration');
 
 router.post('/register',(req, res)=>{
    const username = req.body.username;
@@ -17,4 +18,5 @@ router.post('/register',(req, res)=>{
       }
    });
 });
+
 module.exports = router;

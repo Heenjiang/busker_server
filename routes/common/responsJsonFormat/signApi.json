@@ -1,0 +1,17 @@
+{
+    "correct" : {
+        "code": 200,
+        "isLogged": true,
+        "currentUser": {
+            "id": -1,
+            "username": "",
+            "typeId": -1,
+            "imgUrl": "https://avatars1.githubusercontent.com/u/30335361?s=460&v=4"
+        }
+    },
+    "error": {
+        "code": 400,
+        "isLogged": false,
+        "message": ""
+    }
+}

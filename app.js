@@ -1,8 +1,8 @@
 const express = require('express');
 const app = express();
 const path = require('path');
-const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const cookieParser = require('cookie-parser')
 const bodyParser = require('body-parser');
 
 const indexRouter = require('./routes/index');
@@ -14,6 +14,7 @@ const moment = require('./routes/api/moment');
 const trails = require('./routes/api/trail');
 const login = require('./routes/api/login');
 const register = require('./routes/api/register');
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -30,13 +31,14 @@ app.use(cookieParser());
 // app.use('/', indexRouter);
 app.use("/", express.static(path.resolve('build')));
 app.use('/api/uploadImage',singleImageUploadRouter);
+app.use('/api/login',login);
+app.use('/api/register',register);
 app.use('/api/homepage',homepagejson);
 app.use('/api/busker', buskerRouter);
 app.use('/api/moment', moment);
 app.use('/api/admin', adminRouter);
 app.use('/api/trail', trails);
-app.use('/api/login',login);
-app.use('/api/register',register);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -58,6 +60,10 @@ app.use(function(err, req, res, next) {
     // render the error page
     res.status(err.status || 500);
     res.render('error');
+});
+
+app.listen(3001, function () {
+    console.log('App listening on port 3001!');
 });
 
 module.exports = app;

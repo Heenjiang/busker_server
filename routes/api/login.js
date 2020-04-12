@@ -1,35 +1,53 @@
 const express = require('express');
 const router = express.Router();
-const con = require('../common/dbconfiguration');
-const sql = require('../common/sql.json');
-const loginJson = '{"isLogged":"", "currentUser": {"id": "", "username":"", "typeId": "","imgUrl":""}}';
+const units = require('../common/units');
+const resJson = require('../common/responsJsonFormat/signApi.json');
+const BasicUser = require('../models/user');
+const setCookie = require('../middware/setCookieMiddware');
+const deleteCookie = require('../middware/deleteCookie');
 
-router.get('/login',(req,res)=>{
-    const username = req.query.username;
-    console.log(username);
-    const password = req.query.password;
+router.post('/',(req,res, next)=>{
+    const username = req.body.username;
+    const password = req.body.password;
+    const userType = req.body.usertype;
 
-    let query = con.query(sql.getUserByUsername ,username , (err, result)=>{
-        const object = JSON.parse(loginJson);
-        if (err) res.status(400).json({"message":"Bad Request!!!"});
-        else{
-            if(result.length <= 0){
-                console.log(result.sql);
-                res.status(200).json({"success": false, "data":{"isLogged":false, "message":"Username not exist in DB!!"}})
-            }
-            else if(result[0]['password'] !== password){
-                console.log(result);
-                res.status(200).json({"success": false, "data":{"isLogged":false, "message":"Password incorrect!!"}});
-            }
-             else{
-                object.isLogged = true;
-                object.currentUser['id'] = result[0].user_id;
-                object.currentUser['username'] = username;
-                object.currentUser['typeId'] = result[0].type_id;
-                object.currentUser['imgUrl'] = result[0].path;
-                res.status(200).json({"success": true, "data":object});
-            }
-        }
-    });
+    paramsCheck = units.verifyParams(username, password, userType);
+    
+    if(paramsCheck.isvalid){
+        BasicUser.findOne({ where: {username: username, user_type_id: userType} })
+        .then(user => {
+           if(user === null){
+            resJson.error.message = "该用户尚未注册该类型";
+            //手动删除cookie： defaultTimeLost
+            deleteCookie(req, res, next);
+            res.status(400).json(resJson.error);
+            return ;
+           }
+           else{
+                if(user.password === password){
+                    resJson.correct.isLogged = true;
+                    resJson.correct.currentUser = user;
+                    setCookie(req, res, next, user.user_id);
+                    res.status(200).json(resJson.correct);
+                }
+                else{
+                    resJson.error.message = "密码不正确！";
+                     //手动删除cookie： defaultTimeLost
+                    deleteCookie(req, res, next);
+                    res.status(400).json(resJson.error);
+                    return ;
+                }
+           }
+        })
+    }
+    else{
+        resJson.error.message = paramsCheck.message;
+        //手动删除cookie： defaultTimeLost
+        deleteCookie(req, res, next);
+        res.status(400).json(resJson.error);
+        return ;
+    }
+
+   
 });
 module.exports = router;

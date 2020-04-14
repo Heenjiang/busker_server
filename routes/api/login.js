@@ -26,7 +26,10 @@ router.post('/',(req,res, next)=>{
            else{
                 if(user.password === password){
                     resJson.correct.isLogged = true;
-                    resJson.correct.currentUser = user;
+                    resJson.correct.currentUser.id = user.user_id;
+                    resJson.correct.currentUser.username = user.username;
+                    resJson.correct.currentUser.typeId = user.user_type_id;
+                    resJson.correct.currentUser.imgUrl = user.icon_path;
                     setCookie(req, res, next, user.user_id);
                     res.status(200).json(resJson.correct);
                 }

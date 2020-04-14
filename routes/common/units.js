@@ -23,7 +23,13 @@ exports.md5Hash = md5Hash;
 const verifyParams = function verifyParameters(username, password, userType){
     if(username && password && userType){
       if(verifyEmail(username) && Number.isInteger(userType) && (typeof password === "string")){
-         return {"isvalid":true};
+          if(userType === 1 || userType === 3){
+            return {"isvalid":true};
+          }
+         else{
+             return {
+             "isvalid": false, "message": "参数形式不合法！只能注册busker或者general user"}
+            }
       }
       else{
          return {"isvalid": false, "message": "参数形式不合法！"}
@@ -34,3 +40,21 @@ const verifyParams = function verifyParameters(username, password, userType){
     }
  }
  exports.verifyParams = verifyParams;
+
+ const addAlbumVerifyParams = function addAlbumVerify(req, res, next){
+    let resBody = require('../common/responsJsonFormat/generalResponseBody.json');
+    if(req.body.buskerId && req.body.albumName && req.body.price && req.body.imgUrl && req.body.singles){
+        next();
+    }
+    else{
+        resBody.success = false;
+        resBody.data.code = 400;
+        resBody.data.message = '缺少参数！';
+        res.status(400).json(resBody);
+        return;
+    }
+ }
+ exports.verifyParams = addAlbumVerifyParams;
+
+
+

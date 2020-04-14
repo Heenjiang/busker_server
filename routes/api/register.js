@@ -5,13 +5,13 @@ const BasciUser = require('../models/user');
 const Busker = require('../models/busker');
 const Register = require('../models/register');
 const units = require('../common/units');
-const responseBody = require('../common/responsJsonFormat/registerApiResponsebody.json');
+const responseBody = require('../common/responsJsonFormat/generalResponseBody.json');
 
 router.post('/',(req, res, next)=>{
    const usernameFromClient = req.body.username;
    const passwordFromClient = req.body.password;
    const userType = req.body.usertype;
-   const parametersCheck = units.verifyParameters(usernameFromClient, passwordFromClient, userType);
+   const parametersCheck = units.verifyParams(usernameFromClient, passwordFromClient, userType);
 
    if(parametersCheck.isvalid){
       BasciUser.findOne({ where: 
@@ -40,7 +40,6 @@ router.post('/',(req, res, next)=>{
                         responseBody.success = true;
                         responseBody.data.code = 200;
                         responseBody.data.message = '注册成功';
-                        responseBody.data.user = basicUser;
                         setCookies(req, res, next, basicUser.user_id);
                         res.status(200).json(responseBody);
                         return;
@@ -55,7 +54,7 @@ router.post('/',(req, res, next)=>{
                      });
                      break;
                   //general user registeration
-                  case 2:
+                  case 3:
                      const register = Register.build({register_id: basicUser.user_id, register_signature: 'This user is lazy and has no personal signature yet'})
                      register.save()
                      .then(anotherTask => {
@@ -63,7 +62,6 @@ router.post('/',(req, res, next)=>{
                         responseBody.success = true;
                         responseBody.data.code = 200;
                         responseBody.data.message = '注册成功';
-                        responseBody.data.user = basicUser;
                         setCookies(req, res, next, basicUser.user_id);
                         res.status(200).json(responseBody);
                         return;

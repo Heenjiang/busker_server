@@ -121,51 +121,53 @@ router.get('/buskerDetail',(req, res)=>{
     console.log(query.sql);
 });
 router.get('/getBusker', (req, res)=>{
-    const id = req.query.id;
-    let trails = [];
-    let moments =[];
-    const getMomentsIdSql = sql.getMomentsId + id + ";";
-    const getTrailIdSql = sql.getTrailId + id + ";";
-    const getBuskerDetailSql = sql.getBuskerDetails + id + ";";
-    con.query(getBuskerDetailSql, function (err, result, fields) {
-        if (err) res.status(400).json({"info":" illegal request!!!! "});
-        if(result.length === 0) res.status(400).json({"success":true, "data": null});
-        else{
-            //format json
-            buskerdetail.success = true;
-            buskerdetail.data.id = id;
-            buskerdetail.data.imgUrl = result[0].path;
-            buskerdetail.data.buskerName = result[0]["nick_name"];
-            buskerdetail.data.sex = result[0].sex;
-            if(result[0].date_of_birth === null) buskerdetail.data.age = null;
-            else buskerdetail.data.age = result[0].date_of_birth.getFullYear()+"-"+result[0].date_of_birth.getMonth()+"-"+result[0].date_of_birth.getDay();
-            buskerdetail.data.instrument = result[0]["instruments"];
-            buskerdetail.data.introduce = result[0]["introduction"];
-            const request1=request({url:'http://localhost:3001/api/trail/getTrailsByBuskerId?id='+ id,
-                method:'GET',
-                headers:{'Content-Type':'text/json' }
-            },function(error,response,body){
-                if(!error && response.statusCode==200){
-                    // res.render('task',{'data':JSON.parse(body) });
-                    const trailsApi = JSON.parse(body);
-                    trails = trailsApi.data.trailList;
-                    buskerdetail.data.trails = trails;
-                }
-            });
-            const request2=request({url:'http://localhost:3001/api/moment/getMomentsByBuskerId?id='+ id,
-                method:'GET',
-                headers:{'Content-Type':'text/json' }
-            },function(error,response,body){
-                if(!error && response.statusCode==200){
-                    // res.render('task',{'data':JSON.parse(body) });
-                    const momentApi = JSON.parse(body);
-                    moments = momentApi.data.momentList;
-                    buskerdetail.data.moments = moments;
-                }
-                res.status(200).json({"success":buskerdetail.success, "data":{"busker": buskerdetail.data}})
-            });
-        }
-    });
+    // const id = req.query.id;
+    // let trails = [];
+    // let moments =[];
+    // const getMomentsIdSql = sql.getMomentsId + id + ";";
+    // const getTrailIdSql = sql.getTrailId + id + ";";
+    // const getBuskerDetailSql = sql.getBuskerDetails + id + ";";
+    // con.query(getBuskerDetailSql, function (err, result, fields) {
+    //     if (err) res.status(400).json({"info":" illegal request!!!! "});
+    //     if(result.length === 0) res.status(400).json({"success":true, "data": null});
+    //     else{
+    //         //format json
+    //         buskerdetail.success = true;
+    //         buskerdetail.data.id = id;
+    //         buskerdetail.data.imgUrl = result[0].path;
+    //         buskerdetail.data.buskerName = result[0]["nick_name"];
+    //         buskerdetail.data.sex = result[0].sex;
+    //         if(result[0].date_of_birth === null) buskerdetail.data.age = null;
+    //         else buskerdetail.data.age = result[0].date_of_birth.getFullYear()+"-"+result[0].date_of_birth.getMonth()+"-"+result[0].date_of_birth.getDay();
+    //         buskerdetail.data.instrument = result[0]["instruments"];
+    //         buskerdetail.data.introduce = result[0]["introduction"];
+    //         const request1=request({url:'http://localhost:3001/api/trail/getTrailsByBuskerId?id='+ id,
+    //             method:'GET',
+    //             headers:{'Content-Type':'text/json' }
+    //         },function(error,response,body){
+    //             if(!error && response.statusCode==200){
+    //                 // res.render('task',{'data':JSON.parse(body) });
+    //                 const trailsApi = JSON.parse(body);
+    //                 trails = trailsApi.data.trailList;
+    //                 buskerdetail.data.trails = trails;
+    //             }
+    //         });
+    //         const request2=request({url:'http://localhost:3001/api/moment/getMomentsByBuskerId?id='+ id,
+    //             method:'GET',
+    //             headers:{'Content-Type':'text/json' }
+    //         },function(error,response,body){
+    //             if(!error && response.statusCode==200){
+    //                 // res.render('task',{'data':JSON.parse(body) });
+    //                 const momentApi = JSON.parse(body);
+    //                 moments = momentApi.data.momentList;
+    //                 buskerdetail.data.moments = moments;
+    //             }
+    //             res.status(200).json({"success":buskerdetail.success, "data":{"busker": buskerdetail.data}})
+    //         });
+    //     }
+    // });
+    const buskerId = req.body.buskerId;
+    
 });
 router.post('/addBusker', (req,res)=>{
     const buskerId = parseInt(req.body.buskerId);

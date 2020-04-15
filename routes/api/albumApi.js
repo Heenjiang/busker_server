@@ -250,11 +250,13 @@ router.get('/albums', (req, res, next) => {
                        }
                        else{
                         errorResponse(res, 'album id:' + album.album_id + '没有对应的reource，请检查数据的完整性');
-                       }
+                        return;
+                    }
                     })
                     .catch(error => {
                         console.log(error);
                         errorResponse(res, '数据库错误！');
+                        return;
                     });
                     }
                     else{
@@ -264,6 +266,7 @@ router.get('/albums', (req, res, next) => {
                 .catch(error => {
                     console.log(error);
                     errorResponse(res, '数据库错误！');
+                    return;
                 });
             
             });
@@ -272,12 +275,14 @@ router.get('/albums', (req, res, next) => {
         else{
             console.log(error);
             errorResponse(res, '没有符合查询条件的albums，请检查数据的完整性');
+            return;
         }
        
     })
     .catch(error => {
         console.log(error);
         errorResponse(res, '数据库错误！');
+        return;
     });
 
 });
@@ -285,6 +290,7 @@ router.post('/comment', (req, res, next) => {
     const albumId = (typeof req.body.albumId === "number") ? req.body.albumId : -1;
     if(albumId === -1){
         errorResponse(res, '参数不正确');
+        return;
     }
     else{
         let resComments = [];
@@ -324,21 +330,25 @@ router.post('/comment', (req, res, next) => {
                         }
                         else{
                             errorResponse(res, 'comment id:' + comment.coment_id + '没有对应的用户，请检查数据完成性');
+                            return;
                         }
                     })
                     .catch(error => {
                         console.log(error);
                         errorResponse(res, '数据库操作错误');
+                        return;
                     });
                 });
             }
             else{
                 errorResponse(res, '该专辑还没有评论哦');
+                return;
             }
         })
         .catch(error => {
             console.log(error);
             errorResponse(res, '数据库操作错误');
+            return;
         });
     }
 });

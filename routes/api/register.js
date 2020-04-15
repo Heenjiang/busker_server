@@ -36,7 +36,6 @@ router.post('/',(req, res, next)=>{
                      const busker = Busker.build({busker_id: basicUser.user_id, busker_introduction: 'This busker is lazy and has no personal introduction yet'})
                      busker.save()
                      .then(anotherTask => {
-                        setCookies(req, res, next, basicUser.user_id);
                         responseBody.success = true;
                         responseBody.data.code = 200;
                         responseBody.data.message = '注册成功';

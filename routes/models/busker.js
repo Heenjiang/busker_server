@@ -6,7 +6,7 @@ class Busker extends Model {}
 Busker.init({
     busker_id: {type: Sequelize.INTEGER, primaryKey: true, unique: true},
     busker_nick_name: Sequelize.STRING,
-    insruments: Sequelize.STRING,
+    instruments: Sequelize.STRING,
     busker_introduction: Sequelize.STRING,
 }, { sequelize, 
      timestamps: false,

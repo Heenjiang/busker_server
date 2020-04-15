@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser')
 const bodyParser = require('body-parser');
 
 const indexRouter = require('./routes/index');
+const albumApi = require('./routes/api/albumApi');
 const buskerRouter = require('./routes/api/busker');
 const adminRouter = require('./routes/api/admin');
 const singleImageUploadRouter = require('./routes/api/singleImageUploadRouter');
@@ -38,6 +39,7 @@ app.use('/api/busker', buskerRouter);
 app.use('/api/moment', moment);
 app.use('/api/admin', adminRouter);
 app.use('/api/trail', trails);
+app.use('/api/album', albumApi);
 
 
 // catch 404 and forward to error handler

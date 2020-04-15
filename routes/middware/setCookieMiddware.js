@@ -2,7 +2,7 @@ const units = require('../common/units')
 function setCookie(req, res, next, userId) {
     const userType = req.body.usertype;
     const defaultCookie = req.cookies.defaultTimeLost;
-    const cookieFlag = 'not signed';
+    let cookieFlag = 'not signed';
     switch(userType){
         case 1: 
             cookieFlag = 'busker signed!';

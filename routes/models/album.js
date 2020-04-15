@@ -4,7 +4,7 @@ const Model = Sequelize.Model;
 
 class Album extends Model {}
 Album.init({
-    album_id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true, unique: true, allowNull: false},
+    album_id: {type: Sequelize.INTEGER, primaryKey: true, unique: true},
     busker_id: {type: Sequelize.INTEGER, allowNull: false},
     album_name: {type: Sequelize.STRING, allowNull: false},
     album_description: {type: Sequelize.STRING, allowNull: false, defaultValue: '暂无描述'},
@@ -18,6 +18,6 @@ Album.init({
 }, { sequelize, 
      timestamps: false,
      freezeTableName: true,
-     modelName: 'album' });
+     modelName: 'albums' });
 
 module.exports = Album;

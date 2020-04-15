@@ -41,20 +41,16 @@ const verifyParams = function verifyParameters(username, password, userType){
  }
  exports.verifyParams = verifyParams;
 
- const addAlbumVerifyParams = function addAlbumVerify(req, res, next){
+ const addAlbumVerifyParams = function addAlbumVerify(req, res){
     let resBody = require('../common/responsJsonFormat/generalResponseBody.json');
     if(req.body.buskerId && req.body.albumName && req.body.price && req.body.imgUrl && req.body.singles){
-        next();
+        return true;
     }
     else{
-        resBody.success = false;
-        resBody.data.code = 400;
-        resBody.data.message = '缺少参数！';
-        res.status(400).json(resBody);
-        return;
+        return false;
     }
  }
- exports.verifyParams = addAlbumVerifyParams;
+ exports.addAlbumVerifyParams = addAlbumVerifyParams;
 
 
 

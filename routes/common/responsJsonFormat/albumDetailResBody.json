@@ -1,0 +1,20 @@
+{
+    "success": true,
+    "data": {
+        "code": 200,
+        "message": "获取detail成功",
+        "album": {
+            "albumsId": 1,
+            "buskerId": 2,
+            "buskerName": "Isabelia herrera",
+            "albumsName": "After Hours",
+            "author": "The Weekend",
+            "price": "12.33",
+            "score": 8.0,
+            "sales": 57,
+            "imgUrl": "https://media.pitchfork.com/photos/5e6fcda64b101700083a93ce/1:1/w_160/After%20Hours_The%20Weeknd.jpg",
+            "describe": "ajsdljfljalsdlgjalsd",
+            "publishTime": "2020-04-02 23:21:39"
+        }
+    }
+}

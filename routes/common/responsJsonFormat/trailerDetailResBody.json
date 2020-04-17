@@ -1,0 +1,17 @@
+{
+    "success": true,
+    "data": {
+        "code": 200,
+        "trail": {
+            "id": 1,
+            "buskerId": 1,
+            "performingTime": -1,
+            "publishedTime": -1,
+            "performAddress": "",
+            "describe": "",
+            "imgUrl": "",
+            "likes": 1385,
+            "buskers": ""
+        }
+    }
+}

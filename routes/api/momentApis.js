@@ -222,11 +222,12 @@ router.post('/detail', async (req, res) => {
     }
 });
 router.get('/moments', (req, res) => {
-    Moment.findAll({where: {moment_status: {[Sequelize.Op.or]: [1, 2, 3]}}}).then(moments=> {
+    Moment.findAll({attributes: ['moment_id']},{where: {moment_status: {[Sequelize.Op.or]: [1, 2, 3]}}}).then(moments=> {
         if(moments.length === 0){
             return errorResBody(res,'没有符合条件的moment记录');
         }
         else{
+
             return getAllMoments(moments, res);
         }
     })

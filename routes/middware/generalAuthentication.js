@@ -4,6 +4,7 @@ function generalAuthentication(req, res, next, authenticationFlag) {
 
     const defaultCookie = req.cookies.defaultTimeLost;
 
+    console.log(req.cookies);
     if (defaultCookie === undefined) {
         resBody.success = false;
         resBody.data.code = 400;

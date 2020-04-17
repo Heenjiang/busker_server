@@ -6,13 +6,13 @@ const cookieParser = require('cookie-parser')
 const bodyParser = require('body-parser');
 
 const indexRouter = require('./routes/index');
-const albumApi = require('./routes/api/albumApi');
+const albumApi = require('./routes/api/albumApis');
 const buskerRouter = require('./routes/api/busker');
 const adminRouter = require('./routes/api/admin');
 const singleImageUploadRouter = require('./routes/api/singleImageUploadRouter');
 const homepagejson = require('./routes/api/homepage');
-const moment = require('./routes/api/moment');
-const trails = require('./routes/api/trail');
+const moment = require('./routes/api/momentApis');
+const trails = require('./routes/api/trailerApis');
 const login = require('./routes/api/login');
 const register = require('./routes/api/register');
 

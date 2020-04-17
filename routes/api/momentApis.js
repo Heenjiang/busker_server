@@ -152,7 +152,7 @@ router.post('/detail', async (req, res) => {
                 { transaction: t });
             //参数错误处理
             if(moment === null)
-                return errorResBody(res, '没有id为：' + moment.moment_id + '的moment记录');
+                return errorResBody(res, '没有id为：' + momentId + '的moment记录');
 
             const busker = await Busker.findOne(
                 {where: {busker_id: moment.busker_id}},
@@ -167,7 +167,6 @@ router.post('/detail', async (req, res) => {
             await t.commit();
            
             //赋值语句
-            let variableName = 'momentDetailRes' + moment.moment_id;
             let momentDetailRes = null;
             momentDetailRes = require('../common/responsJsonFormat/momentDetailRes.json');
             momentDetailRes.data.moment.videos = [];
@@ -228,10 +227,6 @@ router.get('/moments', (req, res) => {
             return errorResBody(res,'没有符合条件的moment记录');
         }
         else{
-            //设置cookie
-            // key = "defaultTimeLost"
-            // value = req.cookies.defaultTimeLost
-            // request.cookie('' + key + '=' + value + '');
             return getAllMoments(moments, res);
         }
     })
@@ -276,4 +271,5 @@ function getMomentByid(momentId) {
       }
     )
   }
+  
 module.exports = router;

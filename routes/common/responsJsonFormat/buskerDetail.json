@@ -1,0 +1,18 @@
+{
+    "success": true,
+    "data": {
+        "code": 200,
+        "busker": {
+            "id": 1,
+            "imgUrl": "https://avatars1.githubusercontent.com/u/30335361?s=460&v=4",
+            "buskerName": "ColdPlay",
+            "sex": 1,
+            "age": 19,
+            "instrument": "Guitar",
+            "introduce": "nice man",
+            "moments": [],
+            "trails": [],
+            "albums": []
+        }
+    }
+}

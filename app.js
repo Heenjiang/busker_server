@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 
 const indexRouter = require('./routes/index');
 const albumApi = require('./routes/api/albumApis');
+const userApi = require('./routes/api/generaluserApi');
 const buskerRouter = require('./routes/api/busker');
 const adminRouter = require('./routes/api/admin');
 const singleImageUploadRouter = require('./routes/api/singleImageUploadRouter');
@@ -35,6 +36,7 @@ app.use('/api/uploadImage',singleImageUploadRouter);
 app.use('/api/login',login);
 app.use('/api/register',register);
 app.use('/api/homepage',homepagejson);
+app.use('/api/user', userApi);
 app.use('/api/busker', buskerRouter);
 app.use('/api/moment', moment);
 app.use('/api/admin', adminRouter);

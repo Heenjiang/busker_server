@@ -352,5 +352,61 @@ router.post('/comment', (req, res, next) => {
         });
     }
 });
+router.post('/buskerId', (req, res, next) => {
+    let buskerId = typeof req.body.buskerId === "number" ? req.body.buskerId : -1;
+    if(buskerId === -1){
+        return errorResBody(res, '参数错误');
+    }
+
+    Album.findAll({attributes: ['album_id']},{where: {album_status: {[Sequelize.Op.or]: [1, 2]}, busker_id: buskerId}})
+    .then(albums=> {
+        if(moments.length === 0){
+            return errorResBody(res,'没有符合条件的moment记录');
+        }
+        else{
+            return getAllMoments(albums, res);
+        }
+    })
+    .catch(error => {
+        console.log(error);
+        return errorResBody(res,'数据库错误');
+    });
+
+});
+
+async function getAllMoments(moments, res){
+    let momentsList = [];
+    for(let i = 0; i < moments.length; i++){
+        let momentInfoById = await getAlbumsByBuskerId(moments[i].moment_id);
+        if(momentInfoById.code === 400){
+            return errorResBody(res, momentInfoById.data);
+        }
+        else{
+            momentsList.push(momentInfoById.data);
+        }
+        
+    }
+    allMometnsBody.data.momentList = momentsList;
+    return res.status(200).json(allMometnsBody);
+}
+
+function getAlbumsByBuskerId(momentId) {
+    return new Promise((resolve) => {
+        request.post({url: url, jar: j, form: {momentId: momentId}},(error, response, body) => {
+            const bodyJson = JSON.parse(body);
+            if(response.statusCode === 200){
+                resolve({code: 200, data: bodyJson.data.moment});
+            }
+            if(response.statusCode === 400){
+
+                resolve({code: 400, data: bodyJson.data.message});
+            }
+            if(error){
+                resolve({code: -1, data: '请求转发错误'});
+            }
+        });
+      }
+    )
+  }
 
 module.exports = router;

@@ -236,7 +236,28 @@ router.get('/moments', (req, res) => {
         return errorResBody(res,'数据库错误');
     })
 });
+//根据busker的id获取他的动态
+router.post('/buskerId' , async (req, res, next) => {
+    let buskerId = typeof parseInt(req.body.buskerId) === "number" ? req.body.buskerId : -1;
+    if(buskerId === -1){
+        return errorResBody(res, '参数错误');
+    }
 
+    Moment.findAll({attributes: ['moment_id']},{where: {moment_status: {[Sequelize.Op.or]: [1, 2, 3]}, busker_id: buskerId}})
+    .then(moments=> {
+        if(moments.length === 0){
+            return errorResBody(res,'没有符合条件的moment记录');
+        }
+        else{
+            return getAllMoments(moments, res);
+        }
+    })
+    .catch(error => {
+        console.log(error);
+        return errorResBody(res,'数据库错误');
+    });
+
+})
 async function getAllMoments(moments, res){
     let momentsList = [];
     for(let i = 0; i < moments.length; i++){
@@ -250,8 +271,7 @@ async function getAllMoments(moments, res){
         
     }
     allMometnsBody.data.momentList = momentsList;
-    res.status(200).json(allMometnsBody);
-    return ;
+    return res.status(200).json(allMometnsBody);
 }
 
 function getMomentByid(momentId) {

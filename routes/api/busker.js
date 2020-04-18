@@ -1,220 +1,115 @@
 const express = require("express");
 const router = express.Router();
+const Sequelize = require('sequelize');
+const sequelize  = require('../common/ormConfiguration');
+const errorRes = require('../middware/errorResponse');
+const generalResBody = require('../common/responsJsonFormat/generalResponseBody.json');
+const buskerDetail = require('../common/responsJsonFormat/buskerDetail.json');
+const buskerAndRegisterAuthentication = require('../middware/buskerAndRegisterAutentication');
+const adminAuthentication = require('../middware/adminAuthentication');
+const Busker = require('../models/busker');
+
+const request = require('request');
+const j = request.jar();
+
+
 const con = require('../common/dbconfiguration');
 const sql = require('../common/sql.json');
-const fs = require('fs');
-const buskerdetail = require('../common/json/buskerDetail');
-const formidable = require('formidable');
-const buskerList = require('../common/json/buskerList');
-const busker = '{"buskerList": [{"id": 1, "imgUrl": "/img/a.png", "buskerName": "Busker", "age": 23, "sex": 1, "instrument": "Guitar, Piano", "introduce": "introduce", "recentPerform": "", "tendencyAllHot": 0}]}';
-const request = require('request');
-function getNowFormatDate() {
-    let date = new Date();
-    let seperator1 = "-";
-    let month = date.getMonth() + 1;
-    let strDate = date.getDate();
-    if (month >= 1 && month <= 9) {
-        month = "0" + month;
-    }
-    if (strDate >= 0 && strDate <= 9) {
-        strDate = "0" + strDate;
-    }
-    let currentdate = date.getFullYear() + seperator1 + month + seperator1 + strDate + seperator1 + date.getHours() + seperator1 + date.getMinutes() + seperator1 + date.getSeconds() +seperator1 + date.getMilliseconds();
-    return currentdate.toString();
-}
-router.get('/buskerList',(req, res)=> {
-    const object = JSON.parse(busker);
-    const pageId = req.query.page;
-    con.query(sql.getBuskerList, (err, result, field) => {
-        if (err) res.status(400).json({"info":" illegal request!!!! "});
-        else{
-            for (let i = 0; i < result.length; i++){
-                const birthday = result[i].date_of_birth;
-                const dateEnd = new Date();
-                const dateDiff = dateEnd.getTime() - birthday.getTime();
-                const age = parseInt(dateDiff / (24*3600*1000*365));
-                object['buskerList'].unshift({"id": result[i].user_id, "imgUrl": result[i].path, "buskerName": result[i].nick_name, "age": age, "sex": result[i].sex, "instrument": result[i].instruments, "introduce": result[i].introduction, "recentPerform": "", "tendencyAllHot": 0});
-            }
-            object['buskerList'].pop();
-            con.query(sql.getRecentPerformDate,(err, result,field)=>{
-                if (err) res.status(400).json({"info":" illegal request!!!! "});
-                else{
-                    for(let i = 0; i < result.length; i++){
-                        for (let j = 0; j <  object['buskerList'].length; j++){
-                            if( object['buskerList'][j].id == result[i].busker_id)
-                                object['buskerList'][j].recentPerform = result[i].recentPerform;
-                        }
-                    }
-                    con.query(sql.getTendencyValue,(err, result,field)=>{
-                        if (err) res.status(400).json({"info":" illegal request!!!! "});
-                        else{
-                            for(let i = 0; i < result.length; i++){
-                                for (let j = 0; j <  object['buskerList'].length; j++){
-                                    if (object['buskerList'][j].id == result[i].busker_id)
-                                        object['buskerList'][j].tendencyAllHot = result[i].tendencyAllHot;
-                                }
-                            }
-                            console.log(object['buskerList'].length);
-                            res.status(200).json({"success":true, "data":{"buskerList":object['buskerList'].slice((pageId-1)*10,(pageId-1)*10+10),"totalNum":object['buskerList'].length}});
-                            res.end();
-                        }
-                    });
-                }
-            });
 
-        }
-    });
-});
-router.get('/buskerDetail',(req, res)=>{
-    const id = req.query.id;
-    let trails = [];
-    let moments =[];
-    const getMomentsIdSql = sql.getMomentsId + id + ";";
-    const getTrailIdSql = sql.getTrailId + id + ";";
-    const getBuskerDetailSql = sql.getBuskerDetails + id + ";";
-    const query = con.query(getBuskerDetailSql, function (err, result, fields) {
-            if (err) res.status(400).json({"info":" illegal request!!!! "});
-            if(result.length === 0) res.status(400).json({"success":true, "data": null});
-            else{
-                //calculate age
-                const birthday = result[0].date_of_birth;
-                const dateEnd = new Date();
-                let age = null;
-                if(result[0].date_of_birth !== null){
-                    const dateDiff = dateEnd.getTime() - birthday.getTime();
-                    age = parseInt(dateDiff / (24*3600*1000*365));
-                }
-                //format json
-                buskerdetail.success = true;
-                buskerdetail.data.id = parseInt(id);
-                buskerdetail.data.imgUrl = result[0].path;
-                buskerdetail.data.buskerName = result[0]["nick_name"];
-                buskerdetail.data.sex = result[0].sex;
-                buskerdetail.data.age = age;
-                buskerdetail.data.instrument = result[0]["instruments"];
-                buskerdetail.data.introduce = result[0]["introduction"];
-                const request1=request({url:'http://localhost:3001/api/trail/getTrailsByBuskerId?id='+ id,
-                    method:'GET',
-                    headers:{'Content-Type':'text/json' }
-                },function(error,response,body){
-                    if(!error && response.statusCode==200){
-                        // res.render('task',{'data':JSON.parse(body) });
-                        const trailsApi = JSON.parse(body);
-                        trails = trailsApi.data.trailList;
-                        buskerdetail.data.trails = trails;
-                        const request2=request({url:'http://localhost:3001/api/moment/getMomentsByBuskerId?id='+ id,
-                            method:'GET',
-                            headers:{'Content-Type':'text/json' }
-                        },function(error,response,body){
-                            if(!error && response.statusCode==200){
-                                // res.render('task',{'data':JSON.parse(body) });
-                                const momentApi = JSON.parse(body);
-                                moments = momentApi.data.momentList;
-                                buskerdetail.data.moments = moments;
-                                res.status(200).json({"success":buskerdetail.success, "data":{"busker": buskerdetail.data}});
-                            }
-                        });
-                    }
-                });
-              }
-            });
-    console.log(query.sql);
-});
-router.get('/getBusker', (req, res)=>{
-    // const id = req.query.id;
-    // let trails = [];
-    // let moments =[];
-    // const getMomentsIdSql = sql.getMomentsId + id + ";";
-    // const getTrailIdSql = sql.getTrailId + id + ";";
-    // const getBuskerDetailSql = sql.getBuskerDetails + id + ";";
-    // con.query(getBuskerDetailSql, function (err, result, fields) {
-    //     if (err) res.status(400).json({"info":" illegal request!!!! "});
-    //     if(result.length === 0) res.status(400).json({"success":true, "data": null});
-    //     else{
-    //         //format json
-    //         buskerdetail.success = true;
-    //         buskerdetail.data.id = id;
-    //         buskerdetail.data.imgUrl = result[0].path;
-    //         buskerdetail.data.buskerName = result[0]["nick_name"];
-    //         buskerdetail.data.sex = result[0].sex;
-    //         if(result[0].date_of_birth === null) buskerdetail.data.age = null;
-    //         else buskerdetail.data.age = result[0].date_of_birth.getFullYear()+"-"+result[0].date_of_birth.getMonth()+"-"+result[0].date_of_birth.getDay();
-    //         buskerdetail.data.instrument = result[0]["instruments"];
-    //         buskerdetail.data.introduce = result[0]["introduction"];
-    //         const request1=request({url:'http://localhost:3001/api/trail/getTrailsByBuskerId?id='+ id,
-    //             method:'GET',
-    //             headers:{'Content-Type':'text/json' }
-    //         },function(error,response,body){
-    //             if(!error && response.statusCode==200){
-    //                 // res.render('task',{'data':JSON.parse(body) });
-    //                 const trailsApi = JSON.parse(body);
-    //                 trails = trailsApi.data.trailList;
-    //                 buskerdetail.data.trails = trails;
-    //             }
-    //         });
-    //         const request2=request({url:'http://localhost:3001/api/moment/getMomentsByBuskerId?id='+ id,
-    //             method:'GET',
-    //             headers:{'Content-Type':'text/json' }
-    //         },function(error,response,body){
-    //             if(!error && response.statusCode==200){
-    //                 // res.render('task',{'data':JSON.parse(body) });
-    //                 const momentApi = JSON.parse(body);
-    //                 moments = momentApi.data.momentList;
-    //                 buskerdetail.data.moments = moments;
-    //             }
-    //             res.status(200).json({"success":buskerdetail.success, "data":{"busker": buskerdetail.data}})
-    //         });
-    //     }
-    // });
-    const buskerId = req.body.buskerId;
+//用户验证
+router.use('/update', (req, res, next) => buskerAndRegisterAuthentication(req, res, next));
+//只供用户修改个人部分信息（不包括密码）
+router.post('/update', async (req, res, next) => {
+    const url = 'http://localhost:3001/api/user/update';
+    const cookieValue = typeof req.cookies.defaultTimeLost === "string" ? req.cookies.defaultTimeLost : -1;
     
+    //获取参数
+    const buskerId = typeof req.body.buskerId === "number" ? req.body.buskerId : -1;
+    const nickName = typeof req.body.nickName === "string" ? req.body.nickName : -1;
+    const instruments = typeof req.body.instruments === "string" ? req.body.instruments : -1;
+    const introduction = typeof req.body.introduction === "string" ? req.body.introduction : -1;
+    //传递给generalUser api 的参数
+    const iconUrL =  req.body.iconId;
+    const sex = req.body.sex;
+    const dateBirth =  req.body.dateOfBirth;
+
+    //检查参数合法性
+    if(buskerId !== -1 && nickName !== -1 && instruments !== -1 && introduction !== -1){
+        //转发请求到generalUser api
+        const flag = await updateGeneralInfo(buskerId, iconUrL, sex, dateBirth, cookieValue, url);
+        //请求成功
+        if(flag.code === 200){
+            //初始化数据库事务
+            const transaction = await sequelize.transaction(); 
+            try {
+                await Busker.update({busker_nick_name: nickName, instruments: instruments, busker_introduction: introduction}
+                    ,{where: {busker_id: buskerId}}, {transaction: transaction});
+                
+                    await transaction.commit();
+
+                return res.status(200).json(generalResBody);
+                
+            } catch (error) {
+                //事务回滚
+                await transaction.rollback();
+                console.log(error);
+                return errorRes(res, '参数格式错误，请检查request的参数');
+            }
+
+        }
+        else{
+            return errorRes(res, '请求转发错误：' + flag.data);
+        }
+    }
+    else{
+       return errorRes(res, '参数错误，请检查request的参数');
+    }
+
 });
-router.post('/addBusker', (req,res)=>{
-    const buskerId = parseInt(req.body.buskerId);
-    console.log(req.body);
-    const query =  con.query(sql.getBuskerInfoById,buskerId, (err, result)=>{
-        if(err) res.status(400).json({"message":err.toString()});
-        //新增
-        else if(result.length == 0){
-            const status = 1;
-            var iconId = (req.body.iconId == -1 ? 1 : req.body.iconId);
-            var params = [req.body.buskerId, req.body.nickName, req.body.dateOfBirth, req.body.instruments, req.body.introduction, req.body.sex, status];
-            let addSql = con.query(sql.addBusker, params, (err, result)=>{
-                if(err) res.status(400).json({"message": err.toString()});
-                else{
-                    con.query(sql.updateUserIcon,[iconId, req.body.buskerId],(err,result)=>{
-                        if(err) res.status(400).json({"message": err.toString()});
-                    });
-                    res.status(200).json({"success":true, "data":{"code": 0}});
+//验证是否是管理员登录
+router.use('/delete', (req, res, next) => adminAuthentication(req, res, next));
+//删除用户（只能管理员才能删除用户）
+router.post('/delete', async (req, res, next) => {
+    const url = 'http://localhost:3001/api/user/delete';
+    const cookieValue = typeof req.cookies.defaultTimeLost === "string" ? req.cookies.defaultTimeLost : -1;
+    const buskerId = typeof req.body.buskerId === "number" ? req.body.buskerId : -1;
+    //验证参数
+    if(buskerId === -1){
+        return errorRes(res, '参数错误');
+    }
+    //初始化数据库事务
+    const transaction = await sequelize.transaction(); 
+            try {
+                const busker = await Busker.findOne({where: {busker_id: buskerId}},{transaction: transaction});
+                if(busker === null){
+                    return errorRes(res, '数据库中没有指定记录');
                 }
-            });
-            console.log(addSql.sql);
+                await transaction.commit();
+                //转发请求
+                flag = await deleteUser(buskerId, cookieValue, url);
+                if(flag.code === 200){
+                   return res.status(200).json(generalResBody);
+                }
+                else{
+                   return errorRes(res, flag.data);
+                }
+                
+            } catch (error) {
+                //事务回滚
+                await transaction.rollback();
+                console.log(error);
+                return errorRes(res, '参数格式错误，请检查request的参数');
+            }
+    
+})
+//根据buskerid获取busker的相关信息
+router.post('/buskerId', async (req, res, next) => {
+    const buskerId = typeof req.body.buskerId === "number" ? req.body.buskerId : -1;
+    if(buskerId === -1){
+        return errorRes(res, '参数有误');
+    }
 
-        }
-            // 更新
-            else{
-                console.log("update");
-                var iconId = req.body.iconId ;
-                var status = 1;
-                var params = [req.body.nickName, req.body.dateOfBirth, req.body.instruments, req.body.introduction, req.body.sex, status,req.body.buskerId];
-                con.query(sql.updateBusker, params, (err, result)=>{
-                    if(err) res.status(400).json({"message": err.toString()});
-                    else{
-                        if(iconId == -1) res.status(200).json({"success":true, "data":{"code": 0}});
-                        else{
-                            con.query(sql.updateUserIcon,[iconId, req.body.buskerId],(err,result)=>{
-                                if(err) res.status(400).json({"message": err.toString()});
-                                else{
-                                    res.status(200).json({"success":true, "data":{"code": 0}});
-                                }
-                            });
-                        }
 
-                    }
-                });
-        }
-    });
-    console.log(query.sql);
 });
 router.post('/addBuskerIcon', (req,res)=>{
     let form_update = new formidable.IncomingForm(); //创建上传表单
@@ -245,4 +140,83 @@ router.post('/addBuskerIcon', (req,res)=>{
             });
         })
 });
+
+function updateGeneralInfo(userId, iconUrL, sex, dateBirth, cookieValue, url) {
+    return new Promise((resolve) => {
+    const cookie = request.cookie('defaultTimeLost=' + cookieValue);
+    j.setCookie(cookie, url);
+        request.post({url: url, jar: j, form: {id: userId, iconUrL: iconUrL, sex: sex, dateBirth: dateBirth}},(error, response, body) => {
+            const bodyJson = JSON.parse(body);
+            if(response.statusCode === 200){
+                resolve({code: 200, data: bodyJson.data.message});
+            }
+            if(response.statusCode === 400){
+                resolve({code: 400, data: bodyJson.data.message});
+            }
+            if(error){
+                resolve({code: 400, data: '请求转发错误'});
+            }
+        });
+      }
+    )
+  }
+function deleteUser(userId, cookieValue, url) {
+    return new Promise((resolve) => {
+    const cookie = request.cookie('defaultTimeLost=' + cookieValue);
+    j.setCookie(cookie, url);
+        request.post({url: url, jar: j, form: {id: userId}},(error, response, body) => {
+            const bodyJson = JSON.parse(body);
+            if(response.statusCode === 200){
+                resolve({code: 200, data: bodyJson.data});
+            }
+            if(response.statusCode === 400){
+                resolve({code: 400, data: bodyJson.data.message});
+            }
+            if(error){
+                resolve({code: 400, data: '请求转发错误'});
+            }
+        });
+      }
+    )
+  }
+
+function getTrailersByBuskerId(userId, cookieValue, url) {
+    return new Promise((resolve) => {
+    const cookie = request.cookie('defaultTimeLost=' + cookieValue);
+    j.setCookie(cookie, url);
+        request.post({url: url, jar: j, form: {id: userId}},(error, response, body) => {
+            const bodyJson = JSON.parse(body);
+            if(response.statusCode === 200){
+                resolve({code: 200, data: bodyJson.data.trailList});
+            }
+            if(response.statusCode === 400){
+                resolve({code: 400, data: bodyJson.data.message});
+            }
+            if(error){
+                resolve({code: 400, data: '请求转发错误'});
+            }
+        });
+        }
+    )
+}
+
+function getMomentsByBuskerId(userId, cookieValue, url) {
+    return new Promise((resolve) => {
+    const cookie = request.cookie('defaultTimeLost=' + cookieValue);
+    j.setCookie(cookie, url);
+        request.post({url: url, jar: j, form: {id: userId}},(error, response, body) => {
+            const bodyJson = JSON.parse(body);
+            if(response.statusCode === 200){
+                resolve({code: 200, data: bodyJson.data.momentList});
+            }
+            if(response.statusCode === 400){
+                resolve({code: 400, data: bodyJson.data.message});
+            }
+            if(error){
+                resolve({code: 400, data: '请求转发错误'});
+            }
+        });
+        }
+    )
+}
 module.exports = router;

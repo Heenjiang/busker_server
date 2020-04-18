@@ -1,6 +1,6 @@
 const units = require('../common/units')
 const resBody = require('../common/responsJsonFormat/generalResponseBody.json');
-function generalAuthentication(req, res, next, authenticationFlag) {
+function adminAuthentication(req, res, next) {
 
     const defaultCookie = req.cookies.defaultTimeLost;
 
@@ -8,30 +8,31 @@ function generalAuthentication(req, res, next, authenticationFlag) {
     if (defaultCookie === undefined) {
         resBody.success = false;
         resBody.data.code = 400;
-        resBody.data.message = '权限拒绝，请先登录！'
+        resBody.data.message = '权限拒绝，必须是管理员才能访问，管理员请先登录！'
         res.status(400).json(resBody);
         return;
     } 
     else{
         let unsignedFlag = 'not signed';
-        let authenticationFlagMd5CookieValue = units.md5Hash(authenticationFlag);
+        let adminAuthenticationFlagMd5CookieValue = units.md5Hash('admin signed');
         let unsignedFlagMd5CookieValue = units.md5Hash(unsignedFlag);
         switch(defaultCookie){
-            case authenticationFlagMd5CookieValue:
+            case adminAuthenticationFlagMd5CookieValue:
                return next();
             case unsignedFlagMd5CookieValue:
                 resBody.success = false;
                 resBody.data.code = 400;
-                resBody.data.message = '权限拒绝，请先登录！'
+                resBody.data.message = '权限拒绝，必须是管理员才能访问，管理员请先登录！'
                 res.status(400).json(resBody);
                 return;
-            default:
+            default: 
                 resBody.success = false;
                 resBody.data.code = 400;
-                resBody.data.message = '权限拒绝，请先登录！'
+                resBody.data.message = '权限拒绝，必须是管理员才能访问，管理员请先登录！'
                 res.status(400).json(resBody);
                 return;
+
         }
     } 
-  }
-  module.exports = generalAuthentication
+}
+  module.exports = adminAuthentication

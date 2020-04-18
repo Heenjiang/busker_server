@@ -151,7 +151,28 @@ router.get('/trailers', async (req, res, next) => {
     }
     
 });
+//根据busker获取trailers
+router.post('/buskerId', async (req, res, next) => {
+    let buskerId = typeof req.body.buskerId === "number" ? req.body.buskerId : -1;
+    if(buskerId === -1){
+        return errorResBody(res, '参数错误');
+    }
 
+    const transaction = await sequelize.transaction();
+    try {
+        const trailersId = await Trailer.findAll({attributes: ['trailer_id']},
+         {where: {trailer_status: 1, busker_id: buskerId}}, {transaction: transaction});
+         
+         transaction.commit();
+         return getAllTailers(trailersId, res);
+    } catch (error) {
+         //事务失败需要回滚
+         console.log(error);
+         errorRes(res, '数据库事务失败，请检查控制台错误栈信息');
+         return await transaction.rollback();
+    }
+    
+});
 async function getAllTailers(trailers, res){
     let allTrailersBody = require('../common/responsJsonFormat/allTrailers.json');
     let trailerList = [];

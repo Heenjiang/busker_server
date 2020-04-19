@@ -16,6 +16,7 @@ const moment = require('./routes/api/momentApis');
 const trails = require('./routes/api/trailerApis');
 const login = require('./routes/api/login');
 const register = require('./routes/api/register');
+const buskerTrendCalculator = require('./routes/api/trendCaculateApi');
 
 
 // view engine setup
@@ -42,6 +43,7 @@ app.use('/api/moment', moment);
 app.use('/api/admin', adminRouter);
 app.use('/api/trail', trails);
 app.use('/api/album', albumApi);
+app.user('api/calculate/buskertrend', buskerTrendCalculator);
 
 
 // catch 404 and forward to error handler

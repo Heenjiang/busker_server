@@ -11,10 +11,6 @@ const authenticationCheckMiddware = require('../middware/generalAuthentication')
 
 const allMometnsBody = require('../common/responsJsonFormat/getAllMoments.json');
 const request = require('request');
-const j = request.jar();
-const cookie = request.cookie('defaultTimeLost=t1cPNEuIRek8fvtp/yroug==');
-const url = 'http://localhost:3001/api/moment/detail';
-j.setCookie(cookie, url);
 
 router.use('/',(req, res, next) => {
     authenticationCheckMiddware(req, res, next, 'busker signed!');
@@ -163,6 +159,7 @@ router.post('/detail', async (req, res) => {
             const resources = await Resource.findAll({where: {resource_object_id: moment.moment_id, 
                 resource_type_id:{[Sequelize.Op.or]: [3, 6]}, resource_status: 1}},
                 { transaction: t });
+            await moment.update({moment_visits: moment.moment_visits + 1}, {transaction: t});
             //提交事务
             await t.commit();
            
@@ -222,13 +219,14 @@ router.post('/detail', async (req, res) => {
     }
 });
 router.get('/moments', (req, res) => {
+    let cookieValue = req.cookies.defaultTimeLost === undefined ? -1 : req.cookies.defaultTimeLost;
     Moment.findAll({attributes: ['moment_id']},{where: {moment_status: {[Sequelize.Op.or]: [1, 2, 3]}}}).then(moments=> {
         if(moments.length === 0){
             return errorResBody(res,'没有符合条件的moment记录');
         }
         else{
 
-            return getAllMoments(moments, res);
+            return getAllMoments(moments, res, cookieValue);
         }
     })
     .catch(error => {
@@ -238,6 +236,7 @@ router.get('/moments', (req, res) => {
 });
 //根据busker的id获取他的动态
 router.post('/buskerId' , async (req, res, next) => {
+    let cookieValue = req.cookies.defaultTimeLost === undefined ? -1 : req.cookies.defaultTimeLost;
     let buskerId = typeof parseInt(req.body.buskerId) === "number" ? req.body.buskerId : -1;
     if(buskerId === -1){
         return errorResBody(res, '参数错误');
@@ -249,7 +248,7 @@ router.post('/buskerId' , async (req, res, next) => {
             return errorResBody(res,'没有符合条件的moment记录');
         }
         else{
-            return getAllMoments(moments, res);
+            return getAllMoments(moments, res, cookieValue);
         }
     })
     .catch(error => {
@@ -258,10 +257,10 @@ router.post('/buskerId' , async (req, res, next) => {
     });
 
 })
-async function getAllMoments(moments, res){
+async function getAllMoments(moments, res, cookieValue){
     let momentsList = [];
     for(let i = 0; i < moments.length; i++){
-        let momentInfoById = await getMomentByid(moments[i].moment_id);
+        let momentInfoById = await getMomentByid(moments[i].moment_id, cookieValue);
         if(momentInfoById.code === 400){
             return errorResBody(res, momentInfoById.data);
         }
@@ -274,8 +273,12 @@ async function getAllMoments(moments, res){
     return res.status(200).json(allMometnsBody);
 }
 
-function getMomentByid(momentId) {
+function getMomentByid(momentId, cookieValue) {
     return new Promise((resolve) => {
+        const j = request.jar();
+        const cookie = request.cookie('defaultTimeLost=' + cookieValue);
+        const url = 'http://localhost:3001/api/moment/detail';
+        j.setCookie(cookie, url);
         request.post({url: url, jar: j, form: {momentId: momentId}},(error, response, body) => {
             const bodyJson = JSON.parse(body);
             if(response.statusCode === 200){

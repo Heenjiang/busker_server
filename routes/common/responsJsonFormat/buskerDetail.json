@@ -10,9 +10,8 @@
             "age": 19,
             "instrument": "Guitar",
             "introduce": "nice man",
-            "moments": [],
-            "trails": [],
-            "albums": []
+            "recentPerform": 122135435,
+            "tendencyAllHot": 10445
         }
     }
 }

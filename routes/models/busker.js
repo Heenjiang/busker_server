@@ -8,6 +8,7 @@ Busker.init({
     busker_nick_name: Sequelize.STRING,
     instruments: Sequelize.STRING,
     busker_introduction: Sequelize.STRING,
+    busker_visits: {type: Sequelize.INTEGER, defaultValue: 1},
 }, { sequelize, 
      timestamps: false,
      freezeTableName: true,

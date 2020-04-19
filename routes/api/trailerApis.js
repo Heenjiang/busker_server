@@ -11,10 +11,6 @@ const authenticationCheckMiddware = require('../middware/generalAuthentication')
 const paramsVerifyMiddware = require('../middware/addTrailerParamVerify');
 const trailerDetailResBody = require('../common/responsJsonFormat/trailerDetailResBody.json');
 const request = require('request');
-const j = request.jar();
-const cookie = request.cookie('defaultTimeLost=t1cPNEuIRek8fvtp/yroug==');
-const url = 'http://localhost:3001/api/trail/detail';
-j.setCookie(cookie, url);
 
 //登录验证中间件
 router.use('/', (req, res, next) => authenticationCheckMiddware(req, res, next, 'busker signed!'));
@@ -112,6 +108,7 @@ router.post('/detail', async (req, res, next) => {
         const imageReource = await Resource.findOne({where: {resource_id: trailer.trailer_poster, resource_status:1}},
             {transaction: transaction});
         
+        await trailer.update({trailer_visits: trailer.trailer_visits + 1}, {transaction: transaction});
         //提交事务
         await transaction.commit();
 
@@ -136,13 +133,15 @@ router.post('/detail', async (req, res, next) => {
 });
 
 router.get('/trailers', async (req, res, next) => {
+    let url = 'http://localhost:3001/api/trail/detail';
+    let cookieValue = req.cookies.defaultTimeLost === undefined ? -1 : req.cookies.defaultTimeLost;
     const transaction = await sequelize.transaction();
     try {
         const trailersId = await Trailer.findAll({attributes: ['trailer_id']},
          {where: {trailer_status: 1}}, {transaction: transaction});
          
          transaction.commit();
-         return getAllTailers(trailersId, res);
+         return getAllTailers(trailersId, res, url, cookieValue);
     } catch (error) {
          //事务失败需要回滚
          console.log(error);
@@ -153,6 +152,8 @@ router.get('/trailers', async (req, res, next) => {
 });
 //根据busker获取trailers
 router.post('/buskerId', async (req, res, next) => {
+    let url = 'http://localhost:3001/api/trail/detail';
+    let cookieValue = req.cookies.defaultTimeLost === undefined ? -1 : req.cookies.defaultTimeLost;
     let buskerId = typeof req.body.buskerId === "number" ? req.body.buskerId : -1;
     if(buskerId === -1){
         return errorResBody(res, '参数错误');
@@ -164,7 +165,7 @@ router.post('/buskerId', async (req, res, next) => {
          {where: {trailer_status: 1, busker_id: buskerId}}, {transaction: transaction});
          
          transaction.commit();
-         return getAllTailers(trailersId, res);
+         return getAllTailers(trailersId, res, url, cookieValue);
     } catch (error) {
          //事务失败需要回滚
          console.log(error);
@@ -173,11 +174,11 @@ router.post('/buskerId', async (req, res, next) => {
     }
     
 });
-async function getAllTailers(trailers, res){
+async function getAllTailers(trailers, res, url, cookieValue){
     let allTrailersBody = require('../common/responsJsonFormat/allTrailers.json');
     let trailerList = [];
     for(let i = 0; i < trailers.length; i++){
-        let trailerInfoById = await getTrailerByid(trailers[i].trailer_id);
+        let trailerInfoById = await getTrailerByid(trailers[i].trailer_id, url, cookieValue);
         if(trailerInfoById.code === 400){
             return errorRes(res, trailerInfoById.data);
         }
@@ -191,8 +192,11 @@ async function getAllTailers(trailers, res){
     return ;
 }
 
-function getTrailerByid(trailerId) {
+function getTrailerByid(trailerId, url, cookieValue) {
     return new Promise((resolve) => {
+        const j = request.jar();
+        const cookie = request.cookie('defaultTimeLost=' + cookieValue);
+        j.setCookie(cookie, url);
         request.post({url: url, jar: j, form: {trailId: trailerId}},(error, response, body) => {
             const bodyJson = JSON.parse(body);
             if(response.statusCode === 200){

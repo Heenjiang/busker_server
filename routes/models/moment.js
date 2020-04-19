@@ -11,6 +11,7 @@ Moment.init({
     moment_status: {type: Sequelize.INTEGER, allowNull: false, defaultValue: 1},
     moment_trend: {type: Sequelize.INTEGER, allowNull: false, defaultValue: 0},
     moment_published_address: {type: Sequelize.STRING, allowNull: false},
+    moment_visits: {type: Sequelize.INTEGER, allowNull: false, defaultValue: 1},
 }, { sequelize, 
      timestamps: false,
      freezeTableName: true,

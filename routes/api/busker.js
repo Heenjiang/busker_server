@@ -8,6 +8,8 @@ const buskerDetail = require('../common/responsJsonFormat/buskerDetail.json');
 const buskerAndRegisterAuthentication = require('../middware/buskerAndRegisterAutentication');
 const adminAuthentication = require('../middware/adminAuthentication');
 const Busker = require('../models/busker');
+const User = require('../models/user');
+
 
 const request = require('request');
 const j = request.jar();
@@ -55,7 +57,6 @@ router.post('/update', async (req, res, next) => {
                 console.log(error);
                 return errorRes(res, '参数格式错误，请检查request的参数');
             }
-
         }
         else{
             return errorRes(res, '请求转发错误：' + flag.data);
@@ -103,14 +104,45 @@ router.post('/delete', async (req, res, next) => {
     
 })
 //根据buskerid获取busker的相关信息
-router.post('/buskerId', async (req, res, next) => {
+router.post('/detail', async (req, res, next) => {
     const buskerId = typeof req.body.buskerId === "number" ? req.body.buskerId : -1;
     if(buskerId === -1){
         return errorRes(res, '参数有误');
     }
+    const transaction = await sequelize.transaction();
 
+    try{
+        const busker = await Busker.findOne({where: {busker_id: buskerId}},
+             {transaction: transaction});
+        if(busker === null){
+            return errorRes(res, '数据库中没有该条记录');
+        }
+        //更新busker主页被访问的次数
+        await busker.update({busker_visits: busker.busker_visits + 1});
+        const userInfo = await User.findOne({where: {user_id: buskerId, user_status: 1}}, 
+            {transaction: transaction});
+        if(userInfo === null){
+            return errorRes(res, '该用户状态处于不可访问');
+        }
 
+        await transaction.commit();
+        //赋值
+        buskerDetail.data.busker.id = userInfo.user_id;
+        buskerDetail.data.busker.imgUrl = userInfo.icon_path;
+        buskerDetail.data.busker.buskerName = busker.busker_nick_name;
+        buskerDetail.data.busker.sex = userInfo.sex;
+        buskerDetail.data.busker.instrument = busker.instruments;
+        buskerDetail.data.busker.instrument = busker.busker_introduction;
+        return res.status(200).json(buskerDetail);
+
+    }catch (error) {
+        //事务回滚
+        await transaction.rollback();
+        console.log(error);
+        return errorRes(res, '数据库事务失败');
+    }
 });
+
 router.post('/addBuskerIcon', (req,res)=>{
     let form_update = new formidable.IncomingForm(); //创建上传表单
     form_update.encoding = 'utf-8'; //设置编码格式
@@ -160,6 +192,7 @@ function updateGeneralInfo(userId, iconUrL, sex, dateBirth, cookieValue, url) {
       }
     )
   }
+
 function deleteUser(userId, cookieValue, url) {
     return new Promise((resolve) => {
     const cookie = request.cookie('defaultTimeLost=' + cookieValue);
@@ -180,43 +213,4 @@ function deleteUser(userId, cookieValue, url) {
     )
   }
 
-function getTrailersByBuskerId(userId, cookieValue, url) {
-    return new Promise((resolve) => {
-    const cookie = request.cookie('defaultTimeLost=' + cookieValue);
-    j.setCookie(cookie, url);
-        request.post({url: url, jar: j, form: {id: userId}},(error, response, body) => {
-            const bodyJson = JSON.parse(body);
-            if(response.statusCode === 200){
-                resolve({code: 200, data: bodyJson.data.trailList});
-            }
-            if(response.statusCode === 400){
-                resolve({code: 400, data: bodyJson.data.message});
-            }
-            if(error){
-                resolve({code: 400, data: '请求转发错误'});
-            }
-        });
-        }
-    )
-}
-
-function getMomentsByBuskerId(userId, cookieValue, url) {
-    return new Promise((resolve) => {
-    const cookie = request.cookie('defaultTimeLost=' + cookieValue);
-    j.setCookie(cookie, url);
-        request.post({url: url, jar: j, form: {id: userId}},(error, response, body) => {
-            const bodyJson = JSON.parse(body);
-            if(response.statusCode === 200){
-                resolve({code: 200, data: bodyJson.data.momentList});
-            }
-            if(response.statusCode === 400){
-                resolve({code: 400, data: bodyJson.data.message});
-            }
-            if(error){
-                resolve({code: 400, data: '请求转发错误'});
-            }
-        });
-        }
-    )
-}
 module.exports = router;

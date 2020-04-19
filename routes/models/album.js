@@ -15,6 +15,7 @@ Album.init({
     album_single_number: {type: Sequelize.INTEGER, allowNull: false, defaultValue: 0 },
     album_status: {type: Sequelize.INTEGER, allowNull: false, defaultValue: 2 },
     album_author: {type: Sequelize.STRING, allowNull: false, defaultValue: '暂无作者描述'},
+    album_visits: {type: Sequelize.INTEGER, allowNull: false, defaultValue: 1 },
 }, { sequelize, 
      timestamps: false,
      freezeTableName: true,

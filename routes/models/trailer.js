@@ -14,6 +14,7 @@ Trailer.init({
     trailer_description: {type: Sequelize.STRING, allowNull: false},
     trailer_status: {type: Sequelize.INTEGER, allowNull: false, defaultValue: 1},
     trailer_likes: {type: Sequelize.INTEGER, allowNull: false, defaultValue: 0},
+    trailer_visits: {type: Sequelize.INTEGER, allowNull: false, defaultValue: 1},
 }, { sequelize, 
      timestamps: false,
      freezeTableName: true,

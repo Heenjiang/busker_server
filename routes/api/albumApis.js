@@ -14,6 +14,9 @@ const Resource = require('../models/resource');
 const Comment = require('../models/comment');
 const Register = require('../models/register');
 
+const request = require('request');
+
+
 router.use('/',(req, res, next) => {
     authenticationCheckMiddware(req, res, next, 'busker signed!');
 });
@@ -130,7 +133,8 @@ router.post('/delete', (req, res) => {
     }
 });
 router.post('/detail', (req, res) => {
-    const deleteAlbumId = (typeof req.body.albumId === "number") ? req.body.albumId : -1;
+    const deleteAlbumId = (typeof req.body.albumId === "number" || 
+    typeof parseInt(req.body.albumId) !== isNaN) ? parseInt(req.body.albumId) : -1;
     if(deleteAlbumId === -1){
         resBody.success = false;
         resBody.data.code = 400;
@@ -149,6 +153,7 @@ router.post('/detail', (req, res) => {
                     return;
                 }
                 else{
+                    Album.update({album_visits: album.album_visits + 1}, {where: {album_id: album.album_id}});
                     resBodyWithDetail.data.album.albumsId = album.album_id;
                     resBodyWithDetail.data.album.buskerId = album.busker_id;
                     Busker.findOne({where: {busker_id: album.busker_id}})
@@ -167,6 +172,7 @@ router.post('/detail', (req, res) => {
                             resBodyWithDetail.data.album.price = album.album_price;
                             resBodyWithDetail.data.album.score = busker.album_score;
                             resBodyWithDetail.data.album.sales = album.album_sales;
+
                             Resource.findOne({where: {resource_object_id: album.album_id, resource_type_id: 4}})
                             .then(resource => {
                                 if(resource === null){
@@ -354,17 +360,18 @@ router.post('/comment', (req, res, next) => {
 });
 router.post('/buskerId', (req, res, next) => {
     let buskerId = typeof req.body.buskerId === "number" ? req.body.buskerId : -1;
+    let cookieValue = req.cookies.defaultTimeLost === undefined ? -1 : req.cookies.defaultTimeLost;
     if(buskerId === -1){
         return errorResBody(res, '参数错误');
     }
 
-    Album.findAll({attributes: ['album_id']},{where: {album_status: {[Sequelize.Op.or]: [1, 2]}, busker_id: buskerId}})
+    Album.findAll({where: {album_status: {[Sequelize.Op.or]: [1, 2]}, busker_id: buskerId}})
     .then(albums=> {
-        if(moments.length === 0){
-            return errorResBody(res,'没有符合条件的moment记录');
+        if(albums.length === 0){
+            return errorResBody(res,'没有符合条件的Album记录');
         }
         else{
-            return getAllMoments(albums, res);
+            return getAllAlbums(albums, res, cookieValue);
         }
     })
     .catch(error => {
@@ -374,28 +381,32 @@ router.post('/buskerId', (req, res, next) => {
 
 });
 
-async function getAllMoments(moments, res){
-    let momentsList = [];
-    for(let i = 0; i < moments.length; i++){
-        let momentInfoById = await getAlbumsByBuskerId(moments[i].moment_id);
-        if(momentInfoById.code === 400){
-            return errorResBody(res, momentInfoById.data);
+async function getAllAlbums(albums, res, cookieValue){
+    let albumsList = [];
+    for(let i = 0; i < albums.length; i++){
+        let albumsInfoById = await getAlbumsByBuskerId(albums[i].album_id, cookieValue);
+        if(albumsInfoById.code === 400){
+            return errorResponse(res, albumsInfoById.data);
         }
         else{
-            momentsList.push(momentInfoById.data);
+            albumsList.push(albumsInfoById.data);
         }
         
     }
-    allMometnsBody.data.momentList = momentsList;
-    return res.status(200).json(allMometnsBody);
+    albumsResBody.data.albumsList = albumsList;
+    return res.status(200).json(albumsResBody);
 }
 
-function getAlbumsByBuskerId(momentId) {
+function getAlbumsByBuskerId(album, cookieValue) {
     return new Promise((resolve) => {
-        request.post({url: url, jar: j, form: {momentId: momentId}},(error, response, body) => {
+        const j = request.jar();
+        const cookie = request.cookie('defaultTimeLost=' + cookieValue);
+        const url = 'http://localhost:3001/api/album/detail';
+        j.setCookie(cookie, url);
+        request.post({url: url, jar: j, form: {albumId: parseInt(album)}},(error, response, body) => {
             const bodyJson = JSON.parse(body);
             if(response.statusCode === 200){
-                resolve({code: 200, data: bodyJson.data.moment});
+                resolve({code: 200, data: bodyJson.data.album});
             }
             if(response.statusCode === 400){
 

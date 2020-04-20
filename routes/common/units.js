@@ -52,5 +52,13 @@ const verifyParams = function verifyParameters(username, password, userType){
  }
  exports.addAlbumVerifyParams = addAlbumVerifyParams;
 
+ const filterInt = function (value) {
+    if(/^(\-|\+)?([0-9]+|Infinity)$/.test(value))
+      return Number(value);
+    return NaN;
+  }
+  exports.filterInt = filterInt;
+
+
 
 

@@ -7,8 +7,12 @@ const generalResBody = require('../common/responsJsonFormat/generalResponseBody.
 const buskerDetail = require('../common/responsJsonFormat/buskerDetail.json');
 const buskerAndRegisterAuthentication = require('../middware/buskerAndRegisterAutentication');
 const adminAuthentication = require('../middware/adminAuthentication');
+const units = require('../common/units');
+const filterInt = units.filterInt;
+const allBuskersInfo = require('../common/responsJsonFormat/buskersInfo.json');
 const Busker = require('../models/busker');
 const User = require('../models/user');
+const Trailer = require('../models/trailer');
 
 
 const request = require('request');
@@ -105,7 +109,11 @@ router.post('/delete', async (req, res, next) => {
 })
 //根据buskerid获取busker的相关信息
 router.post('/detail', async (req, res, next) => {
-    const buskerId = typeof req.body.buskerId === "number" ? req.body.buskerId : -1;
+    const buskerId = typeof filterInt(req.body.buskerId) === "number" &&
+    filterInt(req.body.buskerId) !== NaN ? filterInt(req.body.buskerId) : -1;
+    const days = typeof filterInt(req.body.days) === "number" &&
+    filterInt(req.body.days) !== NaN ? filterInt(req.body.days) : -1;
+
     if(buskerId === -1){
         return errorRes(res, '参数有误');
     }
@@ -125,14 +133,24 @@ router.post('/detail', async (req, res, next) => {
             return errorRes(res, '该用户状态处于不可访问');
         }
 
+        const newestTrailerRawQuery = "SELECT TRAILER_ID, MAX(TRAILER_PERFORMING_TIME) AS time " + 
+        " FROM trailer WHERE trailer.BUSKER_ID = " + buskerId;
+        const newestTrailer = await sequelize.query(newestTrailerRawQuery, { type: sequelize.QueryTypes.SELECT });
+
+        const url = "http://localhost:3001/api/calculate/buskertrend";
+        const buskerTrend = await getBukserTrend(userInfo.user_id, url, days);
+        
         await transaction.commit();
         //赋值
         buskerDetail.data.busker.id = userInfo.user_id;
         buskerDetail.data.busker.imgUrl = userInfo.icon_path;
         buskerDetail.data.busker.buskerName = busker.busker_nick_name;
         buskerDetail.data.busker.sex = userInfo.sex;
+        buskerDetail.data.busker.age = userInfo.date_of_birth;
         buskerDetail.data.busker.instrument = busker.instruments;
-        buskerDetail.data.busker.instrument = busker.busker_introduction;
+        buskerDetail.data.busker.introduce = busker.busker_introduction;
+        buskerDetail.data.busker.tendencyAllHot = buskerTrend.code === 200 ? buskerTrend.data.buskerTrend : -1;
+        buskerDetail.data.busker.recentPerform = newestTrailer === null ? -1 : newestTrailer[0].TRAILER_ID;
         return res.status(200).json(buskerDetail);
 
     }catch (error) {
@@ -140,6 +158,37 @@ router.post('/detail', async (req, res, next) => {
         await transaction.rollback();
         console.log(error);
         return errorRes(res, '数据库事务失败');
+    }
+});
+
+router.get('/', async (req, res, next) => {
+    const days = filterInt(req.query.days) === NaN ? -1 : filterInt(req.query.days);
+    if(days === -1){
+        return errorRes(res, '参数错误');
+    }
+    const transaction = await sequelize.transaction();
+
+    try {
+        const buskerIds = await Busker.findAll({transaction: transaction});
+        
+        transaction.commit();
+        if(buskerIds === null){
+            return errorRes(res, '没有记录');
+        }
+        let buskersInfo = [];
+        const url = 'http://localhost:3001/api/busker/detail';
+        for(let i = 0; i < buskerIds.length; i++){
+            let buskerInfo = await getBukserTrend(buskerIds[i].busker_id, url, days);
+            if(buskerInfo.code === 200){
+                buskersInfo.push(buskerInfo.data.busker);
+            }
+        }
+        allBuskersInfo.data.buskerList = buskersInfo;
+        return res.status(200).json(allBuskersInfo);
+
+    } catch (error) {
+        console.log(error);
+        return errorRes(res, '事务错误');
     }
 });
 
@@ -213,4 +262,21 @@ function deleteUser(userId, cookieValue, url) {
     )
   }
 
+function getBukserTrend(userId, url, daysParams) {
+    return new Promise((resolve) => {
+            request.post({url: url, form: {buskerId: userId, days: daysParams}},(error, response, body) => {
+                const bodyJson = JSON.parse(body);
+                if(response.statusCode === 200){
+                    resolve({code: 200, data: bodyJson.data});
+                }
+                if(response.statusCode === 400){
+                    resolve({code: 400, data: bodyJson.data.message});
+                }
+                if(error){
+                    resolve({code: 400, data: '请求转发错误'});
+                }
+            });
+        }
+    )
+}
 module.exports = router;

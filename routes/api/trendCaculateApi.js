@@ -4,6 +4,8 @@ const errorRes = require('../middware/errorResponse');
 const trendResBody = require('../common/responsJsonFormat/buskerTrendResBody.json');
 const Sequelize = require('sequelize');
 const sequelize = require('../common/ormConfiguration');
+const units = require('../common/units');
+const filterInt = units.filterInt;
 const Moment = require('../models/register');
 const Trailer = require('../models/trailer');
 const Album = require('../models/album');
@@ -11,12 +13,12 @@ const SignLog = require('../models/signInLog');
 const Busker = require('../models/busker');
 const Comment = require('../models/comment');
 
-router.get('/', async (req, res, next) => {
+router.post('/buskertrend', async (req, res, next) => {
     //参数获取
-    const buskerId = typeof parseInt(req.query.buskerId) === "number" &&
-     parseInt(req.query.buskerId) !== isNaN ? parseInt(req.query.buskerId) : -1;
-    const days = typeof parseInt(req.query.days) === "number" &&
-    parseInt(req.query.days) !== isNaN ? parseInt(req.query.days) : -1;
+    const buskerId = typeof filterInt(req.body.buskerId) === "number" &&
+    filterInt(req.body.buskerId) !== NaN ? filterInt(req.body.buskerId) : -1;
+    const days = typeof filterInt(req.body.days) === "number" &&
+    filterInt(req.body.days) !== NaN ? filterInt(req.body.days) : -1;
 
     //参数验证
     if(buskerId === -1 || days === -1){

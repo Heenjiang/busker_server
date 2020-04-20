@@ -1,0 +1,152 @@
+
+{
+  "header": {
+    "reportVersion": 1,
+    "event": "Allocation failed - JavaScript heap out of memory",
+    "trigger": "FatalError",
+    "filename": "report.20200420.225211.16012.0.001.json",
+    "dumpEventTime": "2020-04-20T22:52:11Z",
+    "dumpEventTimeStamp": "1587412331778",
+    "processId": 16012,
+    "cwd": "E:\\busker_diploma_project\\BuskerV2_backend\\busker_server",
+    "commandLine": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "app.js"
+    ],
+    "nodejsVersion": "v12.15.0",
+    "wordSize": 64,
+    "arch": "x64",
+    "platform": "win32",
+    "componentVersions": {
+      "node": "12.15.0",
+      "v8": "7.7.299.13-node.16",
+      "uv": "1.33.1",
+      "zlib": "1.2.11",
+      "brotli": "1.0.7",
+      "ares": "1.15.0",
+      "modules": "72",
+      "nghttp2": "1.40.0",
+      "napi": "5",
+      "llhttp": "2.0.4",
+      "http_parser": "2.9.3",
+      "openssl": "1.1.1d",
+      "cldr": "35.1",
+      "icu": "64.2",
+      "tz": "2019c",
+      "unicode": "12.1"
+    },
+    "release": {
+      "name": "node",
+      "lts": "Erbium",
+      "headersUrl": "https://nodejs.org/download/release/v12.15.0/node-v12.15.0-headers.tar.gz",
+      "sourceUrl": "https://nodejs.org/download/release/v12.15.0/node-v12.15.0.tar.gz",
+      "libUrl": "https://nodejs.org/download/release/v12.15.0/win-x64/node.lib"
+    },
+    "osName": "Windows_NT",
+    "osRelease": "10.0.18363",
+    "osVersion": "Windows 10 Home",
+    "osMachine": "x86_64",
+    "cpus": [
+      {
+        "model": "AMD Ryzen 5 3550H with Radeon Vega Mobile Gfx  ",
+        "speed": 2096,
+        "user": 19408656,
+        "nice": 0,
+        "sys": 12742140,
+        "idle": 295047062,
+        "irq": 2564781
+      },
+      {
+        "model": "AMD Ryzen 5 3550H with Radeon Vega Mobile Gfx  ",
+        "speed": 2096,
+        "user": 15136640,
+        "nice": 0,
+        "sys": 6287281,
+        "idle": 305773734,
+        "irq": 275984
+      },
+      {
+        "model": "AMD Ryzen 5 3550H with Radeon Vega Mobile Gfx  ",
+        "speed": 2096,
+        "user": 23256828,
+        "nice": 0,
+        "sys": 8951812,
+        "idle": 294989015,
+        "irq": 178625
+      },
+      {
+        "model": "AMD Ryzen 5 3550H with Radeon Vega Mobile Gfx  ",
+        "speed": 2096,
+        "user": 15513328,
+        "nice": 0,
+        "sys": 5267546,
+        "idle": 306416781,
+        "irq": 113765
+      },
+      {
+        "model": "AMD Ryzen 5 3550H with Radeon Vega Mobile Gfx  ",
+        "speed": 2096,
+        "user": 17076093,
+        "nice": 0,
+        "sys": 5990718,
+        "idle": 304130843,
+        "irq": 150593
+      },
+      {
+        "model": "AMD Ryzen 5 3550H with Radeon Vega Mobile Gfx  ",
+        "speed": 2096,
+        "user": 12750703,
+        "nice": 0,
+        "sys": 3989656,
+        "idle": 310457296,
+        "irq": 88859
+      },
+      {
+        "model": "AMD Ryzen 5 3550H with Radeon Vega Mobile Gfx  ",
+        "speed": 2096,
+        "user": 11937953,
+        "nice": 0,
+        "sys": 4456234,
+        "idle": 310803468,
+        "irq": 120437
+      },
+      {
+        "model": "AMD Ryzen 5 3550H with Radeon Vega Mobile Gfx  ",
+        "speed": 2096,
+        "user": 9222812,
+        "nice": 0,
+        "sys": 4572593,
+        "idle": 313402250,
+        "irq": 308421
+      }
+    ],
+    "networkInterfaces": [
+      {
+        "name": "VirtualBox Host-Only Network",
+        "internal": false,
+        "mac": "0a:00:27:00:00:08",
+        "address": "fe80::34a6:b2e4:5702:72ba",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 8
+      },
+      {
+        "name": "VirtualBox Host-Only Network",
+        "internal": false,
+        "mac": "0a:00:27:00:00:08",
+        "address": "192.168.56.1",
+        "netmask": "255.255.255.0",
+        "family": "IPv4"
+      },
+      {
+        "name": "Wi-Fi",
+        "internal": false,
+        "mac": "10:63:c8:d8:ac:11",
+        "address": "fe80::49ac:5f6:59a5:a653",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 17
+      },
+      {
+        "name": "Wi-Fi",
+        "internal": fals

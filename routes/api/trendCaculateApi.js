@@ -13,14 +13,14 @@ const Comment = require('../models/comment');
 
 router.get('/', async (req, res, next) => {
     //参数获取
-    const buskerId = typeof parseInt(req.params.buskerId) === "number" &&
-     parseInt(req.params.buskerId) !== isNaN ? parseInt(req.params.buskerId) : -1;
-    const days = typeof parseInt(req.params.days) === "number" &&
-    parseInt(req.params.days) !== isNaN ? parseInt(req.params.days) : -1;
+    const buskerId = typeof parseInt(req.query.buskerId) === "number" &&
+     parseInt(req.query.buskerId) !== isNaN ? parseInt(req.query.buskerId) : -1;
+    const days = typeof parseInt(req.query.days) === "number" &&
+    parseInt(req.query.days) !== isNaN ? parseInt(req.query.days) : -1;
 
     //参数验证
     if(buskerId === -1 || days === -1){
-        errorRes(res, '参数错误！')
+       return errorRes(res, '参数错误！')
     }
    
     //当前时间戳
@@ -41,11 +41,11 @@ router.get('/', async (req, res, next) => {
      try {
          /*计算busker 最近x天登录的频率，然后登录频率最高的busker权值是：10，按照比例计算指定busker的登录权值 */
          //获取过去days登录最多次的busker
-         const buskerRwaQuery = 'SELECT user_id, COUNT(*) as visits' +
+         const buskerRwaQuery = 'SELECT user_id, COUNT(*) as visits ' +
          'FROM sign_in_log'  + 
         ' WHERE user_type = 1 AND signin_published_Time > ' + xDaysAgo + 
-         'GROUP BY user_id ORDER BY visits DESC;'
-         const buskers = await sequelize.query(buskerRwaQuery, { type: QueryTypes.SELECT });
+         ' GROUP BY user_id ORDER BY visits DESC;'
+         const buskers = await sequelize.query(buskerRwaQuery, { type: sequelize.QueryTypes.SELECT });
          let i = 0;
          while(i < buskers.length && buskers[i].user_id !== buskerId) {i++;}
          //计算busker最近登录的频率权重值
@@ -53,9 +53,9 @@ router.get('/', async (req, res, next) => {
 
          /*计算最近x天moment的权值 */
          const momentRwaQuery = "SELECT BUSKER_ID, COUNT(*) as posted_moments " + 
-         "FROM moments WHERE MOMENT_PUBLISHED_TIME >=" + xDaysAgo;
-         "GROUP BY BUSKER_ID ORDER BY posted_moments DESC;"
-         const moments = await sequelize.query(momentRwaQuery, { type: QueryTypes.SELECT });
+         " FROM moments WHERE MOMENT_PUBLISHED_TIME >= " + xDaysAgo;
+         " GROUP BY BUSKER_ID ORDER BY posted_moments DESC;"
+         const moments = await sequelize.query(momentRwaQuery, { type: sequelize.QueryTypes.SELECT });
          i = 0;
          while(i < moments.length && moments[i].busker_id !== buskerId) {i++;}
          //计算busker最近发布moments的频率权重值
@@ -63,9 +63,9 @@ router.get('/', async (req, res, next) => {
 
          /**计算最近xdays有表演公告的热度值 */
          const trailerRawQuery = "SELECT BUSKER_ID, COUNT(*) as posted_trailers " + 
-         "FROM trailer WHERE TRAILER_PERFORMING_TIME <="  + xDaysLater + 
-        " GROUP BY BUSKER_ID ORDER BY posted_trailers DESC;"
-        const trailers = await sequelize.query(trailerRawQuery, { type: QueryTypes.SELECT });
+         " FROM trailer WHERE TRAILER_PERFORMING_TIME <="  + xDaysLater + 
+        "  GROUP BY BUSKER_ID ORDER BY posted_trailers DESC;"
+        const trailers = await sequelize.query(trailerRawQuery, { type: sequelize.QueryTypes.SELECT });
         i = 0;
          while(i < trailers.length && trailers[i].busker_id !== buskerId) {i++;}
          //计算busker最近发布trailers的频率权重值
@@ -76,29 +76,29 @@ router.get('/', async (req, res, next) => {
           */
         
          //trailer 的访问次数
-         const trailerVisitsRawQuery = "SELECT BUSKER_ID, SUM(trailer_visits) as visits" +
-         "FROM trailer WHERE TRAILER_PERFORMING_TIME <=" + xDaysLater + 
-         "GROUP BY BUSKER_ID ORDER BY trailer_visits DESC;"
-         const trailerVisitsCount = await sequelize.query(trailerVisitsRawQuery, { type: QueryTypes.SELECT });
+         const trailerVisitsRawQuery = "SELECT BUSKER_ID, SUM(trailer_visits) as visits " +
+         " FROM trailer WHERE TRAILER_PERFORMING_TIME <= " + xDaysLater + 
+         " GROUP BY BUSKER_ID ORDER BY trailer_visits DESC;"
+         const trailerVisitsCount = await sequelize.query(trailerVisitsRawQuery, { type: sequelize.QueryTypes.SELECT });
          i = 0;
          while( i < trailerVisitsCount.length && trailerVisitsCount[i].busker_id !== buskerId) {i++;}
          //计算trailer点击次数的权值
         trailerVisitsCountValue = i >= trailerVisitsCount.length ? 0 : trailerVisitsCount[i].visits * 4 / trailerVisitsCount[0].visits;
         
         //moment的访问量计算权值
-        const momentVisitsRawQuery = "SELECT BUSKER_ID, SUM(moment_visits) as visits" +
-        "FROM moments WHERE MOMENT_PUBLISHED_TIME >=" + xDaysAgo +
-        "GROUP BY BUSKER_ID ORDER BY moment_visits DESC;"
-        const momentVisitsCount = await sequelize.query(momentVisitsRawQuery, { type: QueryTypes.SELECT });
+        const momentVisitsRawQuery = "SELECT BUSKER_ID, SUM(moment_visits) as visits " +
+        " FROM moments WHERE MOMENT_PUBLISHED_TIME >=" + xDaysAgo +
+        " GROUP BY BUSKER_ID ORDER BY moment_visits DESC;"
+        const momentVisitsCount = await sequelize.query(momentVisitsRawQuery, { type: sequelize.QueryTypes.SELECT });
         i = 0;
          while( i < momentVisitsCount.length && momentVisitsCount[i].busker_id !== buskerId) {i++;}
          //计算moment点击次数的权值
          momentsVisitsCountValue = i >= momentVisitsCount.length ? 0 : momentVisitsCount[i].visits * 8 / momentVisitsCount[0].visits;
          
          //busker主页被访问的次数
-         const buskerVisitsCountRawQuery = "SELECT BUSKER_ID, SUM(busker_visits) as visits" +
-         "FROM busker GROUP BY BUSKER_ID ORDER BY busker_visits DESC;"
-         const buskerVistCounts = await sequelize.query(buskerVisitsCountRawQuery, { type: QueryTypes.SELECT });
+         const buskerVisitsCountRawQuery = "SELECT BUSKER_ID, SUM(busker_visits) as visits " +
+         " FROM busker GROUP BY BUSKER_ID ORDER BY busker_visits DESC;"
+         const buskerVistCounts = await sequelize.query(buskerVisitsCountRawQuery, { type: sequelize.QueryTypes.SELECT });
          i = 0;
          while( i < buskerVistCounts.length && buskerVistCounts[i].busker_id !== buskerId) {i++;}
          //计算busker点击次数的权值
@@ -114,9 +114,9 @@ router.get('/', async (req, res, next) => {
 
          /**专辑单曲的数量权值*/
          //专辑数量权值：
-         const buskerAlbumsCountRawQuery = "SELECT BUSKER_ID, COUNT(*) as albums FROM albums" +  
-         "GROUP BY BUSKER_ID ORDER BY ALBUM_ID DESC;"
-         const buskerAlbumsCounts = await sequelize.query(buskerAlbumsCountRawQuery, { type: QueryTypes.SELECT });
+         const buskerAlbumsCountRawQuery = "SELECT BUSKER_ID, COUNT(*) as albums FROM albums " +  
+         " GROUP BY BUSKER_ID ORDER BY ALBUM_ID DESC;"
+         const buskerAlbumsCounts = await sequelize.query(buskerAlbumsCountRawQuery, { type: sequelize.QueryTypes.SELECT });
          i = 0;
          while( i < buskerAlbumsCounts.length && buskerAlbumsCounts[i].busker_id !== buskerId) {i++;}
          //计算busker点击次数的权值
@@ -124,9 +124,9 @@ router.get('/', async (req, res, next) => {
 
          //单曲数量权值：
          const buskerSinglesCountRawQuery = "SELECT BUSKER_ID, COUNT(*) as singles FROM singles " + 
-            "GROUP BY BUSKER_ID ORDER BY SINGLE_ID DESC;"
+            " GROUP BY BUSKER_ID ORDER BY SINGLE_ID DESC;"
          
-         const buskerSinglesCounts = await sequelize.query(buskerSinglesCountRawQuery, { type: QueryTypes.SELECT });
+         const buskerSinglesCounts = await sequelize.query(buskerSinglesCountRawQuery, { type: sequelize.QueryTypes.SELECT });
          i = 0;
          while( i < buskerSinglesCounts.length && buskerSinglesCounts[i].busker_id !== buskerId) {i++;}
          //计算busker点击次数的权值

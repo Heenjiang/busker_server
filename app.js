@@ -43,7 +43,7 @@ app.use('/api/moment', moment);
 app.use('/api/admin', adminRouter);
 app.use('/api/trail', trails);
 app.use('/api/album', albumApi);
-app.user('api/calculate/buskertrend', buskerTrendCalculator);
+app.use('/api/calculate/buskertrend', buskerTrendCalculator);
 
 
 // catch 404 and forward to error handler

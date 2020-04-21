@@ -13,12 +13,8 @@ const allBuskersInfo = require('../common/responsJsonFormat/buskersInfo.json');
 const Busker = require('../models/busker');
 const User = require('../models/user');
 const Trailer = require('../models/trailer');
-
-
 const request = require('request');
 const j = request.jar();
-
-
 const con = require('../common/dbconfiguration');
 const sql = require('../common/sql.json');
 

@@ -59,6 +59,20 @@ const verifyParams = function verifyParameters(username, password, userType){
   }
   exports.filterInt = filterInt;
 
-
+const getNowFormatDate = function () {
+    let date = new Date();
+    let seperator1 = "-";
+    let month = date.getMonth() + 1;
+    let strDate = date.getDate();
+    if (month >= 1 && month <= 9) {
+        month = "0" + month;
+    }
+    if (strDate >= 0 && strDate <= 9) {
+        strDate = "0" + strDate;
+    }
+    let currentdate = date.getFullYear() + seperator1 + month + seperator1 + strDate + seperator1 + date.getHours() + seperator1 + date.getMinutes() + seperator1 + date.getSeconds() +seperator1 + date.getMilliseconds();
+    return currentdate.toString();
+}
+exports.getNowFormatDate = getNowFormatDate;
 
 

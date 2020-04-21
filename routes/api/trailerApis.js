@@ -2,7 +2,10 @@ const express = require("express");
 const router = express.Router();
 const Sequelize = require('sequelize');
 const sequelize = require('../common/ormConfiguration');
+const formidable = require('formidable');
 const errorRes = require('../middware/errorResponse');
+const units = require('../common/units');
+const getNowFormatDate = units.getNowFormatDate;
 const Trailer = require('../models/trailer');
 const Resource = require('../models/resource');
 const Busker = require('../models/busker');
@@ -13,7 +16,7 @@ const trailerDetailResBody = require('../common/responsJsonFormat/trailerDetailR
 const request = require('request');
 
 //登录验证中间件
-router.use('/', (req, res, next) => authenticationCheckMiddware(req, res, next, 'busker signed!'));
+// router.use('/', (req, res, next) => authenticationCheckMiddware(req, res, next, 'busker signed!'));
 //新增trailer
 router.post('/add', async (req, res, next) => {
     paramsVerifyMiddware(req, res, next);
@@ -214,31 +217,29 @@ function getTrailerByid(trailerId, url, cookieValue) {
   }
 router.post('/addTrailImage', (req,res)=>{
     let form_update = new formidable.IncomingForm(); //创建上传表单
+    
     form_update.encoding = 'utf-8'; //设置编码格式
     form_update.uploadDir = 'public/images'; //文件上传，设置临时上传目录
     form_update.keepExtensions = true; //保留后缀
     form_update.maxFieldsSize = 20 * 1024 * 1024;   //文件大小 k
-    const typeImage = 2;//1 默认是icon， 2 是poster， 3 是moments中的图片
     form_update.parse(req)
         .on ('fileBegin', function(name, file){
             file.path = form_update.uploadDir  + "/poster" + "/" + getNowFormatDate()+".jpg";
         })
-        .on('file', (name, file) => {
-            let params = ['', typeImage];
-            params[0] = "/" +file.path;
-            con.query(sql.insertImage,params,(err, result)=>{
-                if(err)res.status(400).json(err.toString());
-                else{
-                    if(result) {
-                        con.query(sql.getImageIdByPath, params[0], (err, result)=>{
-                            if(err) res.status(400).json({"message":"在根据path查询imageid的时候数据库出错了！！！"});
-                            else{
-                                res.status(200).json({"imageId":result[0].image_id, "imagePath": params[0]});
-                            }
-                        });
-                    }
-                }
-            });
+        .on('file', async (name, file) => {
+            try {
+                let params  = "/" +file.path;
+                const time = new Date();
+                const timeCount = time.getTime();
+                console.log(timeCount);
+                const resource = await Resource.create({resource_type_id: 7, resource_url: params,resource_uploaded_time: timeCount});
+                // const resourceId = Resource.findOne({where: })
+                generalResBody.data.imageId = resource.null;
+                generalResBody.data.url = resource.resource_url;
+                return res.status(200).json(generalResBody);
+            } catch (error) {
+                errorRes(res, '将trailer 的 poster记录保存进数据库的时候出现错误')
+            }
         })
 });
 module.exports = router;

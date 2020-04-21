@@ -22,7 +22,7 @@ function getNowFormatDate() {
     return currentdate.toString();
 }
 // 单图上传
-router.post('/uploadSingleImage', upload.single('homepageImage'), function(req, res, next){
+router.post('/', upload.single('homepageImage'), function(req, res, next){
     fs.rename(req.file.path, "public/images/poster/" + req.file.fieldname+".jpg", function(err) {
         if (err) {
             throw err;

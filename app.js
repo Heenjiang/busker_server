@@ -17,6 +17,8 @@ const trails = require('./routes/api/trailerApis');
 const login = require('./routes/api/login');
 const register = require('./routes/api/register');
 const buskerTrendCalculator = require('./routes/api/trendCaculateApi');
+const imageUploadApi = require('./routes/api/imageUpload');
+const feedbackApi =require('./routes/api/feedback');
 
 
 // view engine setup
@@ -33,9 +35,7 @@ app.use(cookieParser());
 
 // app.use('/', indexRouter);
 // app.use("/", express.static(path.resolve('build')));
-app.use('/upload', (req, res) => {
-    res.render('layouts/form');
-})
+app.use('/upload', (req, res) => {res.render('layouts/form');})
 app.use('/api/uploadImage',singleImageUploadRouter);
 app.use('/api/login',login);
 app.use('/api/register',register);
@@ -47,6 +47,8 @@ app.use('/api/admin', adminRouter);
 app.use('/api/trail', trails);
 app.use('/api/album', albumApi);
 app.use('/api/calculate', buskerTrendCalculator);
+app.use('/api/image', imageUploadApi);
+app.use('/api/feedback', feedbackApi);
 
 
 // catch 404 and forward to error handler

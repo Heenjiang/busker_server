@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const Sequelize = require('sequelize');
 const sequelize = require('../common/ormConfiguration');
 const formidable = require('formidable');
 const errorRes = require('../middware/errorResponse');
@@ -10,7 +9,7 @@ const Trailer = require('../models/trailer');
 const Resource = require('../models/resource');
 const Busker = require('../models/busker');
 const generalResBody = require('../common/responsJsonFormat/generalResponseBody.json');
-const authenticationCheckMiddware = require('../middware/generalAuthentication');
+const authenticationCheckMiddwdeare = require('../middware/generalAuthentication');
 const paramsVerifyMiddware = require('../middware/addTrailerParamVerify');
 const trailerDetailResBody = require('../common/responsJsonFormat/trailerDetailResBody.json');
 const request = require('request');
@@ -217,7 +216,9 @@ function getTrailerByid(trailerId, url, cookieValue) {
   }
 router.post('/addTrailImage', (req,res)=>{
     let form_update = new formidable.IncomingForm(); //创建上传表单
-    
+    let imageType = -1;
+    let params = null;
+    let timeCount = null;
     form_update.encoding = 'utf-8'; //设置编码格式
     form_update.uploadDir = 'public/images'; //文件上传，设置临时上传目录
     form_update.keepExtensions = true; //保留后缀
@@ -227,12 +228,17 @@ router.post('/addTrailImage', (req,res)=>{
             file.path = form_update.uploadDir  + "/poster" + "/" + getNowFormatDate()+".jpg";
         })
         .on('file', async (name, file) => {
+            params  = "/" +file.path;
+            const time = new Date();
+            timeCount = time.getTime();
+        })
+        .on('field', (fieldName, fieldValue) => {
+            console.log(fieldName + ':' + fieldValue);
+            imageType = parseInt(fieldValue);
+        })
+        .on('end', async () => {
             try {
-                let params  = "/" +file.path;
-                const time = new Date();
-                const timeCount = time.getTime();
-                console.log(timeCount);
-                const resource = await Resource.create({resource_type_id: 7, resource_url: params,resource_uploaded_time: timeCount});
+                resource = await Resource.create({resource_type_id: imageType, resource_url: params,resource_uploaded_time: timeCount});
                 // const resourceId = Resource.findOne({where: })
                 generalResBody.data.imageId = resource.null;
                 generalResBody.data.url = resource.resource_url;

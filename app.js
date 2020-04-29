@@ -34,7 +34,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 // app.use('/', indexRouter);
-// app.use("/", express.static(path.resolve('build')));
+app.use("/", express.static(path.resolve('build')));
 app.use('/upload', (req, res) => {res.render('layouts/form');})
 app.use('/api/uploadImage',singleImageUploadRouter);
 app.use('/api/login',login);

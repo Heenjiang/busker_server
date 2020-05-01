@@ -7,13 +7,15 @@ const units = require('../common/units');
 const getNowFormatDate = units.getNowFormatDate;
 const Resource = require('../models/resource');
 const generalResBody = require('../common/responsJsonFormat/generalResponseBody.json');
+const moveFile = require('../common/moveFile');
 
 router.post('/upload', async (req, res, next) => {
     let form_update = new formidable.IncomingForm(); //创建上传表单
     let imageType = -1;
     let params = null;
     let timeCount = null;
-    let path = null;
+    let originalPath = '';
+    let path = '';
     let filePathFlag = false;
     form_update.encoding = 'utf-8'; //设置编码格式
     form_update.uploadDir = 'public/images'; //文件上传，设置临时上传目录
@@ -25,35 +27,39 @@ router.post('/upload', async (req, res, next) => {
             imageType = parseInt(fieldValue);
             switch(imageType){
                 case 4:
-                    path = path + '/albums';
+                    path =  '/albums';
                     break;
                 case 5:
-                    path = path + '/singles';
+                    path =  '/singles';
                     break;
                 case 6:
-                    path = path + '/moments';
+                    path =  '/moments';
                 case 7:
-                    path = path + '/posters';
+                    path =  '/posters';
                     break;
                 default:
-                    path = path + '/temporary';
+                    path =  '/temporary';
                     break;
             }
         })
         .on('fileBegin', async (name, file) => {
-            while(path === null) {await waitParameters();}
             file.path = form_update.uploadDir  + path + "/" + getNowFormatDate()+".jpg";
+            originalPath =  file.path;
+            console.log(originalPath);
             filePathFlag = true;
         })
         .on('file', async (name, file) => {
             while(filePathFlag === false) {await waitParameters();}
-            params  = "/" +file.path;
+            params  =  form_update.uploadDir  + path + "/" + getNowFormatDate()+".jpg";
             const time = new Date();
             timeCount = time.getTime();
         })
         .on('end', async () => {
-            while(filePathFlag === false) {await waitParameters();}
+            while(filePathFlag === false || path === '') {await waitParameters();}
             try {
+                moveFile(originalPath, params, (err) => {
+                    console.log('error occured when moving file' + err);
+                });
                 resource = await Resource.create({resource_type_id: imageType, resource_url: params,resource_uploaded_time: timeCount});
                 // const resourceId = Resource.findOne({where: })
                 generalResBody.data.imageId = resource.null;
@@ -73,7 +79,7 @@ const resourceId = typeof parseInt(req.body.resourceId) === "number" ? parseInt(
         if(resource === null){
             return errorRes(res, '数据库中没有该记录');
         }
-        const path = '../..' + resource.resource_url;
+        const path = resource.resource_url;
         fs.unlinkSync(path);
         await resource.destroy();
         await resource.save();

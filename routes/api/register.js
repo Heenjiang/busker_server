@@ -6,16 +6,17 @@ const Busker = require('../models/busker');
 const Register = require('../models/register');
 const units = require('../common/units');
 const responseBody = require('../common/responsJsonFormat/generalResponseBody.json');
+const md5Encryption = require('../common/md5Encryption');
 
-router.post('/',(req, res, next)=>{
+router.post('/',async (req, res, next)=>{
    const usernameFromClient = req.body.username;
    const passwordFromClient = req.body.password;
    const userType = req.body.usertype;
    const parametersCheck = units.verifyParams(usernameFromClient, passwordFromClient, userType);
 
    if(parametersCheck.isvalid){
-      BasciUser.findOne({ where: 
-         {username: usernameFromClient, user_type_id: userType} })
+      let seedAndPassworValue = md5Encryption(passwordFromClient);
+      BasciUser.findOne({ where: {username: usernameFromClient, user_type_id: userType} })
       .then(user => {
          if(user){
             responseBody.success = false;
@@ -26,14 +27,20 @@ router.post('/',(req, res, next)=>{
          }
          else{
             //creating BasicUser modle
-            const basicUser = BasciUser.build({username: usernameFromClient, password: passwordFromClient, user_type_id: userType, balance: 0, registered_time: new Date().getTime(), user_status: 1});
+            const basicUser = BasciUser.build({username: usernameFromClient, 
+               password: seedAndPassworValue.encryptionVlaue, 
+               user_type_id: userType, balance: 0, 
+               registered_time: new Date().getTime(), 
+               user_status: 1, password_seed: seedAndPassworValue.seed});
             // you can also build, save and access the object with chaining:
             basicUser.save()
             .then(anotherTask => {
                switch(basicUser.user_type_id){
                   //busker registeration
                   case 1:
-                     const busker = Busker.build({busker_id: basicUser.user_id, busker_introduction: 'This busker is lazy and has no personal introduction yet'})
+                     const busker = Busker.build({busker_id: basicUser.user_id, 
+                        busker_introduction: 
+                        'This busker is lazy and has no personal introduction yet'})
                      busker.save()
                      .then(anotherTask => {
                         responseBody.success = true;
@@ -54,7 +61,8 @@ router.post('/',(req, res, next)=>{
                      break;
                   //general user registeration
                   case 3:
-                     const register = Register.build({register_id: basicUser.user_id, register_signature: 'This user is lazy and has no personal signature yet'})
+                     const register = Register.build({register_id: basicUser.user_id, 
+                        register_signature: 'This user is lazy and has no personal signature yet'})
                      register.save()
                      .then(anotherTask => {
                         setCookies(req, res, next, basicUser.user_id);

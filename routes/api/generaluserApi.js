@@ -51,6 +51,24 @@ router.post('/update', async (req, res, next) => {
         return errorRes(res, '参数格式错误，请检查request的参数');
     }
 });
+router.post('/avatarUpload', async(req, res, next)=>{
+    const userId = (typeof parseInt(req.body.userId) === "number") && !isNaN(parseInt(req.body.userId)) ? parseInt(req.body.userId) : -1;
+    const imgUrl = (typeof parseInt(req.body.value) === "string") && !isNaN(parseInt(req.body.value)) ? parseInt(req.body.value) : -1;
+    if(userId !== -1 && imgUrl !== -1){
+        const user = User.findOne({where:{user_id: userId}});
+        if(user.icon_path !== null){
+            try {
+                const path = icon_path;
+                await fs.unlinkSync(path);
+            } catch (error) {
+                console.log(error);
+                return errorRes(res, '操作系统图片出错操作错误');
+            }
+        }
+        user.icon_path = imgUrl;
+        await user.save();
+    }
+});
 //验证是不是管理员权限
 router.use('/delete', (req, res, next) => adminAuthentication(req, res, next));
 router.post('/delete', async (req, res, next) => {

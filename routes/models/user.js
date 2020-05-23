@@ -14,6 +14,7 @@ User.init({
     date_of_birth:Sequelize.FLOAT,
     registered_time: Sequelize.FLOAT,
     user_status: Sequelize.INTEGER,
+    password_seed: Sequelize.STRING,
 }, { sequelize, 
      timestamps: false,
      freezeTableName: true,

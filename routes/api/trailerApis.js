@@ -8,6 +8,8 @@ const getNowFormatDate = units.getNowFormatDate;
 const Trailer = require('../models/trailer');
 const Resource = require('../models/resource');
 const Busker = require('../models/busker');
+const TrailerLike = require('../models/TrailerLike');
+const User = require('../models/user');
 const generalResBody = require('../common/responsJsonFormat/generalResponseBody.json');
 const authenticationCheckMiddwdeare = require('../middware/generalAuthentication');
 const paramsVerifyMiddware = require('../middware/addTrailerParamVerify');
@@ -21,13 +23,13 @@ router.post('/add', async (req, res, next) => {
     paramsVerifyMiddware(req, res, next);
 
     buskerId =  req.body.buskerId;
-    imageReourceId = req.body.imgUrl;
-    performingTime = req.body.time;
-    publishedTime = req.body.published_time;
+    imageReourceId = req.body.resourceId ;
+    performingTime = req.body.performingTime;
+    publishedTime = req.body.publishedTime;
     performAddress = req.body.address;
     description = req.body.details;
     likes = req.body.like;
-    participants = req.body.buskers;
+    participants = req.body.participant;
 
     //声明事务
     let t = null;
@@ -48,6 +50,7 @@ router.post('/add', async (req, res, next) => {
             trailer_published_time:publishedTime, trailer_poster:resource.resource_id,
             trailer_description: description, trailer_status:1, trailer_likes: 0 }, { transaction: t });
 
+        // trailer
         await trailer.save({ transaction: t });
         //提交事务
         await t.commit();
@@ -97,19 +100,28 @@ router.post('/delete', async (req, res, next) => {
 router.post('/detail', async (req, res, next) => {
     //参数检查
     const trailerId = typeof parseInt(req.body.trailId) === "number" ? parseInt(req.body.trailId) : -1;
-    if(trailerId === -1){
+    if(trailerId === -1 || isNaN(trailerId)){
        return errorRes(res, '参数错误！');
     }
+    const userId = (typeof parseInt(req.body.userId) === "number") && !isNaN(parseInt(req.body.userId)) ? parseInt(req.body.userId) : -1;
+    
     //创建事务
     const transaction = await sequelize.transaction();
     try {
-        const trailer = await Trailer.findOne({where: {trailer_id: trailerId, trailer_status: 1}},{transaction: transaction});
+        const trailer = await Trailer.findOne({where: {trailer_id: trailerId}},{transaction: transaction});
         if(trailer === null){
             return  errorRes(res, '该记录在数据库中不存在哦');
         }        
         const imageReource = await Resource.findOne({where: {resource_id: trailer.trailer_poster, resource_status:1}},
             {transaction: transaction});
-        
+        if(userId !== -1 && !isNaN(trailerId)){
+            const trailerLike = await TrailerLike.findOne({where:{trailer_id: trailerId, register_id: userId, status:1}});
+            if(trailerLike !== null){
+                trailerDetailResBody.data.isLike = true;
+            }
+        }
+        const busker = await Busker.findOne({where:{busker_id: trailer.busker_id}});
+        const user = await User.findOne({where:{user_id: trailer.busker_id}});
         await trailer.update({trailer_visits: trailer.trailer_visits + 1}, {transaction: transaction});
         //提交事务
         await transaction.commit();
@@ -122,8 +134,12 @@ router.post('/detail', async (req, res, next) => {
         trailerDetailResBody.data.trail.performAddress = trailer.trailer_perform_adress;
         trailerDetailResBody.data.trail.describe = trailer.trailer_description;
         trailerDetailResBody.data.trail.imgUrl = imageReource ? imageReource.resource_url: -1;
-        trailerDetailResBody.data.trail.buskers = trailer.trailer_participant;
+        trailerDetailResBody.data.trail.participant = trailer.trailer_participant;
         trailerDetailResBody.data.trail.likes = trailer.trailer_likes;
+        //新增字段
+        trailerDetailResBody.data.trail.buskerName = busker.busker_nick_name;
+        trailerDetailResBody.data.trail.buskerImg = user.icon_path;
+        trailerDetailResBody.data.trail.status = trailer.trailer_status;
 
         return res.status(200).json(trailerDetailResBody);
     } catch (error) {
@@ -175,6 +191,28 @@ router.post('/buskerId', async (req, res, next) => {
          return await transaction.rollback();
     }
     
+});
+router.post('/like', async (req, res, next)=>{
+    const userId = req.body.userId;
+    const trailerId = req.body.trailerId;
+
+    const transaction = await sequelize.transaction();
+
+    try {
+        let trailer = await Trailer.findOne({where:{trailer_id: trailerId}}, {transaction:transaction});
+        await trailer.update({trailer_likes: trailer.trailer_likes + 1}, {transaction:transaction});
+        await trailer.save({transaction:transaction});
+        const time = new Date().getTime();
+        const trailerLike = await TrailerLike.build({register_id: userId, trailer_id: trailerId,
+             register_click_time: time}, {transaction:transaction});
+        await trailerLike.save({transaction:transaction});
+        await transaction.commit();
+        return res.status(200).json(generalResBody);
+    } catch (error) {
+        console.log(error)
+        await transaction.rollback();
+        return errorRes(res, "数据库操作错误"+error);
+    }
 });
 async function getAllTailers(trailers, res, url, cookieValue){
     let allTrailersBody = require('../common/responsJsonFormat/allTrailers.json');

@@ -4,7 +4,7 @@ module.exports = (res, message) => {
         "success": false,
         "data": {
             "code": 400,
-            "message": "注册成功"
+            "message": "请求失败"
         }
     }
     resbody.data.message =  message;

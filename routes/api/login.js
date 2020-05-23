@@ -8,7 +8,7 @@ const BasicUser = require('../models/user');
 const SignInLog =require('../models/signInLog');
 const setCookie = require('../middware/setCookieMiddware');
 const deleteCookie = require('../middware/deleteCookie');
-
+const md5PasswordVerify = require('../common/md5Decryption');
 router.post('/',async (req,res, next)=>{
     const username = req.body.username;
     const password = req.body.password;
@@ -17,6 +17,7 @@ router.post('/',async (req,res, next)=>{
     paramsCheck = units.verifyParams(username, password, userType);
     
     if(paramsCheck.isvalid){
+
         BasicUser.findOne({ where: {username: username, user_type_id: userType} })
         .then(async (user) => {
            if(user === null){
@@ -27,7 +28,8 @@ router.post('/',async (req,res, next)=>{
             return ;
            }
            else{
-                if(user.password === password){
+               
+                if(md5PasswordVerify(password, user.password_seed, user.password)){
                     resJson.correct.isLogged = true;
                     resJson.correct.currentUser.id = user.user_id;
                     resJson.correct.currentUser.username = user.username;

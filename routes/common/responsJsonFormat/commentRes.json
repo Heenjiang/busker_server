@@ -1,0 +1,17 @@
+{
+    "success": true,
+    "data": {
+        "code": 200,
+        "comment": {
+            "commentId": 14,
+            "userId": 2,
+            "userName": "NickName 2",
+            "imgUrl": "https://avatars1.githubusercontent.com/u/30335361?s=460&v=4",
+            "content": "Not good I dont like it.",
+            "star": 2,
+            "publishTime": 1586770000000,
+            "hasReplies": 1
+        }
+    }
+}
+    

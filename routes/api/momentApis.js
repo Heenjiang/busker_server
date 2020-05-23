@@ -49,49 +49,40 @@ router.post('/add',(req,res)=>{
                 return;
             }
             momentModelInstance.save()
-            .then(anotherTask => {
+            .then(async anotherTask => {
                // 向reource 表中插入moment的video数据
-               if(videos !== -1 && videos.length > 0){
-                for(let i = 0; i < videos.length; i++){
-                 videoModelInstance = Resource.build({resource_type_id: 3, 
-                     resource_object_id: momentModelInstance.moment_id,
-                     resource_url: videos[i].url, 
-                     resource_uploaded_time: momentModelInstance.moment_published_time})
-                 videoModelInstance.save()
-                 .then( ()=>{
-                     if(i == videos.length-1){
-                         // 向reource 表中插入moment的image数据
-                        if(images !== -1 && images.length > 0){
-                            for(let j = 0; j < images.length; j++){
-                                imageModelInstance = Resource.build({resource_type_id: 6, 
-                                    resource_object_id: momentModelInstance.moment_id,
-                                    resource_url: images[j].url, 
-                                    resource_uploaded_time: momentModelInstance.moment_published_time})
-                                 imageModelInstance.save()
-                                .then(()=> {
-                                     if(j >= images.length-1){
-                                         res.status(200).json(generalResBody);
-                                         return;
-                                     }
-                                })
-                                .catch(error => {
-                                    console.log(error);
-                                    errorResBody(res, '数据库操作出错');
-                                    return;
-                                });
-                                
-                            }
-                        }
+               if((videos !== -1 && videos.length > 0) || (images !== -1 && images.length > 0)){
+                    for(let i = 0; i < videos.length; i++){
+                        videoModelInstance = await Resource.findOne({where:{resource_id: videos[i].resourceId}});
+                        videoModelInstance.update({resource_object_id: momentModelInstance.moment_id})
+                        .catch(error => {
+                            console.log(error);
+                            errorResBody(res, '数据库操作出错');
+                            return;
+                    });
+            
                     }
-                 })
-                 .catch(error => {
-                     console.log(error);
-                     errorResBody(res, '数据库操作出错');
-                     return;
-                 });
-          
+                    for(let j = 0; j < images.length; j++){
+                        imageModelInstance = await Resource.findOne({where:{resource_id: images[j].resourceId}});
+                        imageModelInstance.update({resource_object_id: momentModelInstance.moment_id})
+                        .then(()=> {
+                            if(j >= images.length-1){
+                                res.status(200).json(generalResBody);
+                                return;
+                            }
+                        })
+                        .catch(error => {
+                            console.log(error);
+                            errorResBody(res, '数据库操作出错');
+                            return;
+                        });
+                        
+                    }
                 }
-             }
+                else{
+                    res.status(200).json(generalResBody);
+                    return;
+                }
             })
             .catch(error => {
                 console.log(error);
@@ -176,6 +167,8 @@ router.post('/detail', async (req, res) => {
             momentDetailRes.data.moment.address = moment.moment_published_address;
             momentDetailRes.data.moment.tendency = moment.moment_trend;
             momentDetailRes.data.moment.buskerName = busker.busker_nick_name;
+            //新增字段
+            momentDetailRes.data.moment.buskerId = moment.busker_id;
             //赋值images, videos 字段
             for(let i = 0; i < resources.length; i++){
                 switch(resources[i].resource_type_id){

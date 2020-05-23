@@ -43,7 +43,7 @@ const verifyParams = function verifyParameters(username, password, userType){
 
  const addAlbumVerifyParams = function addAlbumVerify(req, res){
     let resBody = require('../common/responsJsonFormat/generalResponseBody.json');
-    if(req.body.buskerId && req.body.albumName && req.body.price && req.body.imgUrl && req.body.singles){
+    if(req.body.buskerId && req.body.albumName && req.body.price && req.body.image && req.body.singles){
         return true;
     }
     else{
@@ -70,7 +70,8 @@ const getNowFormatDate = function () {
     if (strDate >= 0 && strDate <= 9) {
         strDate = "0" + strDate;
     }
-    let currentdate = date.getFullYear() + seperator1 + month + seperator1 + strDate + seperator1 + date.getHours() + seperator1 + date.getMinutes() + seperator1 + date.getSeconds() +seperator1 + date.getMilliseconds();
+    let currentdate = date.getFullYear() + seperator1 + month + seperator1 + strDate + seperator1 + 
+    date.getHours() + seperator1 + date.getMinutes() + seperator1 + date.getSeconds() +seperator1 + date.getMilliseconds();
     return currentdate.toString();
 }
 exports.getNowFormatDate = getNowFormatDate;

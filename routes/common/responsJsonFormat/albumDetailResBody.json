@@ -14,7 +14,10 @@
             "sales": 57,
             "imgUrl": "https://media.pitchfork.com/photos/5e6fcda64b101700083a93ce/1:1/w_160/After%20Hours_The%20Weeknd.jpg",
             "describe": "ajsdljfljalsdlgjalsd",
-            "publishTime": "2020-04-02 23:21:39"
+            "publishTime": "2020-04-02 23:21:39",
+            "singleNumber": 4,
+            "albumStatus": 2,
+            "visits": 1451
         }
     }
 }

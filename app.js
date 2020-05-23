@@ -5,8 +5,8 @@ const logger = require('morgan');
 const cookieParser = require('cookie-parser')
 const bodyParser = require('body-parser');
 
-const indexRouter = require('./routes/index');
 const albumApi = require('./routes/api/albumApis');
+const singlApi = require('./routes/api/singleApi');
 const userApi = require('./routes/api/generaluserApi');
 const buskerRouter = require('./routes/api/busker');
 const adminRouter = require('./routes/api/admin');
@@ -18,7 +18,9 @@ const login = require('./routes/api/login');
 const register = require('./routes/api/register');
 const buskerTrendCalculator = require('./routes/api/trendCaculateApi');
 const imageUploadApi = require('./routes/api/imageUpload');
-const feedbackApi =require('./routes/api/feedback');
+const feedbackApi = require('./routes/api/feedback');
+const commentApi = require('./routes/api/commentApis');
+const audioUpload = require('./routes/api/audioUplad');
 
 
 // view engine setup
@@ -49,6 +51,9 @@ app.use('/api/album', albumApi);
 app.use('/api/calculate', buskerTrendCalculator);
 app.use('/api/image', imageUploadApi);
 app.use('/api/feedback', feedbackApi);
+app.use('/api/single',singlApi);
+app.use('/api/comment', commentApi);
+app.use('/api/audioUpload', audioUpload);
 
 
 // catch 404 and forward to error handler

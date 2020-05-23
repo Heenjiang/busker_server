@@ -31,7 +31,7 @@ router.post('/update', async (req, res, next) => {
     const instruments = typeof req.body.instruments === "string" ? req.body.instruments : -1;
     const introduction = typeof req.body.introduction === "string" ? req.body.introduction : -1;
     //传递给generalUser api 的参数
-    const iconUrL =  req.body.iconId;
+    const iconUrL =  req.body.imgUrl;
     const sex = req.body.sex;
     const dateBirth =  req.body.dateOfBirth;
 

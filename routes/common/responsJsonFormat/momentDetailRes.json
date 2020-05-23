@@ -5,6 +5,7 @@
         "moment": {
             "id": 1,
             "time": "2018-03-11 15:16:17",
+            "buskerId": -1,
             "buskerName": "Busker1",
             "address": "China, ChongQing",
             "describe": "动态的内容",

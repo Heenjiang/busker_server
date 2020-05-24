@@ -186,7 +186,7 @@ router.post('/detail', async (req, res) => {
                             resBodyWithDetail.data.album.albumsName = album.album_name;
                             resBodyWithDetail.data.album.author = busker.album_author;
                             resBodyWithDetail.data.album.price = album.album_price;
-                            resBodyWithDetail.data.album.score = busker.album_score;
+                            resBodyWithDetail.data.album.score = album.album_score;
                             resBodyWithDetail.data.album.sales = album.album_sales;
                             //新增字段
                             resBodyWithDetail.data.album.singleNumber = album.album_single_number;
@@ -336,7 +336,7 @@ router.get('/albums', (req, res, next) => {
 
 });
 router.post('/comments', (req, res, next) => {
-    const albumId = (typeof req.body.albumId === "number") ? req.body.albumId : -1;
+    const albumId = parseInt(req.body.albumId);
     if(albumId === -1){
         errorResponse(res, '参数不正确');
         return;
@@ -471,16 +471,16 @@ router.post('/comment/sub', (req, res, next) => {
     }
 });
 router.post('/buskerId', (req, res, next) => {
-    let buskerId = typeof req.body.buskerId === "number" ? req.body.buskerId : -1;
+    let buskerId =  parseInt(req.body.buskerId);
     let cookieValue = req.cookies.defaultTimeLost === undefined ? -1 : req.cookies.defaultTimeLost;
     if(buskerId === -1){
-        return errorResBody(res, '参数错误');
+        return errorResponse(res, '参数错误');
     }
 
     Album.findAll({where: {album_status: {[Sequelize.Op.or]: [1, 2]}, busker_id: buskerId}})
     .then(albums=> {
         if(albums.length === 0){
-            return errorResBody(res,'没有符合条件的Album记录');
+            return res.status(200).json(albumsResBody);
         }
         else{
             return getAllAlbums(albums, res, cookieValue);
@@ -488,7 +488,7 @@ router.post('/buskerId', (req, res, next) => {
     })
     .catch(error => {
         console.log(error);
-        return errorResBody(res,'数据库错误');
+        return errorResponse(res,'数据库错误');
     });
 
 });

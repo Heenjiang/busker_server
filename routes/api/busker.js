@@ -157,7 +157,7 @@ router.post('/detail', async (req, res, next) => {
     }
 });
 
-router.get('/', async (req, res, next) => {
+router.get('/buskers', async (req, res, next) => {
     const days = filterInt(req.query.days) === NaN ? -1 : filterInt(req.query.days);
     if(days === -1){
         return errorRes(res, '参数错误');
@@ -187,7 +187,44 @@ router.get('/', async (req, res, next) => {
         return errorRes(res, '事务错误');
     }
 });
+router.get('/recommend', async (req, res, next) => {
+    const days = filterInt(req.query.days) === NaN ? -1 : filterInt(req.query.days);
+    if(days === -1){
+        return errorRes(res, '参数错误');
+    }
+    const transaction = await sequelize.transaction();
 
+    try {
+        const buskerIds = await Busker.findAll({transaction: transaction});
+        
+        transaction.commit();
+        if(buskerIds === null){
+            return errorRes(res, '没有记录');
+        }
+        let buskersInfo = [];
+        const url = 'http://localhost:3001/api/busker/detail';
+        for(let i = 0; i < buskerIds.length; i++){
+            let buskerInfo = await getBukserTrend(buskerIds[i].busker_id, url, days);
+            if(buskerInfo.code === 200){
+                buskersInfo.push(buskerInfo.data.busker);
+            }
+        }
+        let recommendBuskers = {
+            "success": true,
+            "data": {
+                "code": 200,
+                "recommendBusker":[]
+            }
+        }
+
+        recommendBuskers.data.recommendBusker = buskersInfo;
+        return res.status(200).json(recommendBuskers);
+
+    } catch (error) {
+        console.log(error);
+        return errorRes(res, '事务错误');
+    }
+});
 router.post('/addBuskerIcon', (req,res)=>{
     let form_update = new formidable.IncomingForm(); //创建上传表单
     form_update.encoding = 'utf-8'; //设置编码格式

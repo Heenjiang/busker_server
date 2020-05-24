@@ -63,7 +63,7 @@ router.post('/add', async (req, res, next) => {
         // We rollback the transaction.
         console.log(error);
         //响应请求
-        errorResBody(res,'数据库事务错误');
+        errorRes(res,'数据库事务错误');
         return await t.rollback();
    }
     
@@ -172,9 +172,9 @@ router.get('/trailers', async (req, res, next) => {
 router.post('/buskerId', async (req, res, next) => {
     let url = 'http://localhost:3001/api/trail/detail';
     let cookieValue = req.cookies.defaultTimeLost === undefined ? -1 : req.cookies.defaultTimeLost;
-    let buskerId = typeof req.body.buskerId === "number" ? req.body.buskerId : -1;
+    let buskerId = typeof parseInt(req.body.buskerId) === "number" ? parseInt(req.body.buskerId) : -1;
     if(buskerId === -1){
-        return errorResBody(res, '参数错误');
+        return errorRes(res, '参数错误');
     }
 
     const transaction = await sequelize.transaction();

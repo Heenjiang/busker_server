@@ -19,13 +19,13 @@ function setCookie(req, res, next, userId) {
     if (defaultCookie === undefined) {
         // no: set a new cookie
         let md5CookieValue = units.md5Hash(cookieFlag);
-        res.cookie('defaultTimeLost',md5CookieValue, { maxAge: 86400000 * 10, httpOnly: true});
+        res.cookie('defaultTimeLost',md5CookieValue, { maxAge: 86400000 * 10, httpOnly: false});
     } 
     else{
         let tenDays = req.body.tenDaysChecked;
         if(tenDays === true){
             let md5CookieValue = units.md5Hash(cookieFlag);
-            res.cookie('defaultTimeLost',md5CookieValue, { maxAge: 86400000 * 10, httpOnly: true, secure: false, overwrite: true});
+            res.cookie('defaultTimeLost',md5CookieValue, { maxAge: 86400000 * 10, httpOnly: false, secure: false, overwrite: true});
         }
     } 
     next(); // <-- important!

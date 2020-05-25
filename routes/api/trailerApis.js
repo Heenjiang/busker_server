@@ -16,9 +16,6 @@ const paramsVerifyMiddware = require('../middware/addTrailerParamVerify');
 const trailerDetailResBody = require('../common/responsJsonFormat/trailerDetailResBody.json');
 const request = require('request');
 
-//登录验证中间件
-// router.use('/', (req, res, next) => authenticationCheckMiddware(req, res, next, 'busker signed!'));
-//新增trailer
 router.post('/add', async (req, res, next) => {
     paramsVerifyMiddware(req, res, next);
 
@@ -117,6 +114,7 @@ router.post('/detail', async (req, res, next) => {
         if(userId !== -1 && !isNaN(trailerId)){
             const trailerLike = await TrailerLike.findOne({where:{trailer_id: trailerId, register_id: userId, status:1}});
             if(trailerLike !== null){
+                console.log(trailerLike)
                 trailerDetailResBody.data.isLike = true;
             }
         }
@@ -136,6 +134,7 @@ router.post('/detail', async (req, res, next) => {
         trailerDetailResBody.data.trail.imgUrl = imageReource ? imageReource.resource_url: -1;
         trailerDetailResBody.data.trail.participant = trailer.trailer_participant;
         trailerDetailResBody.data.trail.likes = trailer.trailer_likes;
+
         //新增字段
         trailerDetailResBody.data.trail.buskerName = busker.busker_nick_name;
         trailerDetailResBody.data.trail.buskerImg = user.icon_path;

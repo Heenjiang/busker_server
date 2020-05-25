@@ -6,6 +6,7 @@ const md5Module = require('md5');
  */
 module.exports = function decryption(passwordValue, seed, passwordMd5Value) {
     let value = md5Module(seed + passwordValue);
+    console.log(passwordMd5Value+'/n'+value);
     return passwordMd5Value === value;
 }
 

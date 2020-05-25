@@ -1,17 +1,23 @@
 {
     "correct" : {
-        "code": 200,
-        "isLogged": true,
-        "currentUser": {
-            "id": -1,
-            "username": "",
-            "typeId": -1,
-            "imgUrl": "https://avatars1.githubusercontent.com/u/30335361?s=460&v=4"
+        "success": true,
+        "data":{
+              "code": 200,
+              "isLogged": true,
+              "currentUser": {
+                "id": 31,
+                "username": "1207881522@qq.com",
+                "typeId": 1,
+                "imgUrl": null
+          }
         }
     },
     "error": {
-        "code": 400,
-        "isLogged": false,
-        "message": ""
-    }
+        "success": true,
+        "data":{
+              "code": 400,
+              "isLogged": false,
+              "message": "xxxxxx"
+        }
+    }    
 }

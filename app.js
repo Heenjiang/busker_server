@@ -11,7 +11,7 @@ const userApi = require('./routes/api/generaluserApi');
 const buskerRouter = require('./routes/api/busker');
 const adminRouter = require('./routes/api/admin');
 const singleImageUploadRouter = require('./routes/api/singleImageUploadRouter');
-const homepagejson = require('./routes/api/homepage');
+const homepage = require('./routes/api/homepage');
 const moment = require('./routes/api/momentApis');
 const trails = require('./routes/api/trailerApis');
 const login = require('./routes/api/login');
@@ -21,6 +21,7 @@ const imageUploadApi = require('./routes/api/imageUpload');
 const feedbackApi = require('./routes/api/feedback');
 const commentApi = require('./routes/api/commentApis');
 const audioUpload = require('./routes/api/audioUplad');
+const codeSend = require('./routes/api/sendCaptcha');
 
 
 // view engine setup
@@ -41,7 +42,7 @@ app.use('/upload', (req, res) => {res.render('layouts/form');})
 app.use('/api/uploadImage',singleImageUploadRouter);
 app.use('/api/login',login);
 app.use('/api/register',register);
-app.use('/api/homepage',homepagejson);
+app.use('/api/homepage',homepage);
 app.use('/api/user', userApi);
 app.use('/api/busker', buskerRouter);
 app.use('/api/moment', moment);
@@ -54,6 +55,7 @@ app.use('/api/feedback', feedbackApi);
 app.use('/api/single',singlApi);
 app.use('/api/comment', commentApi);
 app.use('/api/audioUpload', audioUpload);
+app.use('/api/captcha', codeSend);
 
 
 // catch 404 and forward to error handler

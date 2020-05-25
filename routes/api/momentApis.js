@@ -14,9 +14,9 @@ const authenticationCheckMiddware = require('../middware/generalAuthentication')
 const allMometnsBody = require('../common/responsJsonFormat/getAllMoments.json');
 const request = require('request');
 
-router.use('/',(req, res, next) => {
-    authenticationCheckMiddware(req, res, next, 'busker signed!');
-});
+// router.use('/',(req, res, next) => {
+//     authenticationCheckMiddware(req, res, next, 'busker signed!');
+// });
 router.post('/add',(req,res)=>{
 
     // 参数获取

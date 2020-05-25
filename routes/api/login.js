@@ -30,11 +30,13 @@ router.post('/',async (req,res, next)=>{
            else{
                
                 if(md5PasswordVerify(password, user.password_seed, user.password)){
-                    resJson.correct.isLogged = true;
-                    resJson.correct.currentUser.id = user.user_id;
-                    resJson.correct.currentUser.username = user.username;
-                    resJson.correct.currentUser.typeId = user.user_type_id;
-                    resJson.correct.currentUser.imgUrl = user.icon_path;
+                    resJson.correct.success = true;
+                    resJson.correct.data.code = 200;
+                    resJson.correct.data.isLogged = true;
+                    resJson.correct.data.currentUser.id = user.user_id;
+                    resJson.correct.data.currentUser.username = user.username;
+                    resJson.correct.data.currentUser.typeId = user.user_type_id;
+                    resJson.correct.data.currentUser.imgUrl = user.icon_path;
                     const transaction = await sequelize.transaction(); 
                     try {
                         const signLogRecord = await SignInLog.build({user_id: user.user_id, 
@@ -51,10 +53,13 @@ router.post('/',async (req,res, next)=>{
                     return res.status(200).json(resJson.correct);
                 }
                 else{
-                    resJson.error.message = "密码不正确！";
+                    resJson.error.data.message = "密码不正确！";
                      //手动删除cookie： defaultTimeLost
                     deleteCookie(req, res, next);
-                    res.status(400).json(resJson.error);
+                    resJson.error.success = true;
+                    resJson.correct.data.code = 400;
+                    resJson.error.data.isLogged = false;
+                    res.status(200).json(resJson.error);
                     return ;
                 }
            }
@@ -69,5 +74,17 @@ router.post('/',async (req,res, next)=>{
     }
 
    
+});
+router.post('/logout', (req, res, next)=>{
+    deleteCookie(req, res, next);
+    let loginOutBody = {
+        "success": true,
+        "data": {
+            "code": 200,
+            "isLogged": false,
+        }
+     }
+     return res.status(200).json(loginOutBody);
+        
 });
 module.exports = router;

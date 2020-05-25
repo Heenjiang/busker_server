@@ -20,9 +20,9 @@ const AlbumTransaction = require('../models/AlbumTransaction');
 const request = require('request');
 
 
-router.use('/',(req, res, next) => {
-    authenticationCheckMiddware(req, res, next, 'busker signed!');
-});
+// router.use('/',(req, res, next) => {
+//     authenticationCheckMiddware(req, res, next, 'busker signed!');
+// });
 router.post('/add',async (req, res) => {
     if(paramsCheck.addAlbumVerifyParams(req, res) === false){
         resBody.success = false;
@@ -141,10 +141,8 @@ router.post('/delete', (req, res) => {
     }
 });
 router.post('/detail', async (req, res) => {
-    const albumId = (typeof req.body.albumId === "number" || 
-    typeof parseInt(req.body.albumId) !== isNaN) ? parseInt(req.body.albumId) : -1;
-    const userId = (typeof req.body.userId === "number" || 
-    typeof parseInt(req.body.userId) !== isNaN) ? parseInt(req.body.userId) : -1;
+    const albumId = parseInt(req.body.albumId);
+    const userId = parseInt(req.body.userId);
     if(albumId === -1){
         resBody.success = false;
         resBody.data.code = 400;
@@ -517,7 +515,16 @@ router.post('/status', async (req, res, next)=>{
    }
 
 });
-
+router.post('/buy', async (req, res, next)=>{
+    const albumId = req.body.albumId;
+    const userId = req.body.userId;
+    const album =  await Album.findOne({where:{album_id: albumId}});
+    const transaction = await AlbumTransaction.build({register_id: userId, album_id:albumId,
+        transaction_time: new Date().getTime(), transaction_costs: album.album_price});
+    await transaction.save();
+    resBody.data.haveAlbum = true;
+    return res.status(200).json(resBody);
+});
 async function getAllAlbums(albums, res, cookieValue){
     let albumsList = [];
     for(let i = 0; i < albums.length; i++){
